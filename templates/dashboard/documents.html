@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Documents{% endblock %}
+{% block page_title %}Document Vault{% endblock %}
+
+{% block content %}
+<div class="glass-card animate-fade-in">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <h2 class="section-title">Project Documents</h2>
+        <button style="background: var(--accent-gradient); border:none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+            <i class="fa-solid fa-upload"></i> Upload Document
+        </button>
+    </div>
+    
+    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <th style="padding: 12px;">Document Name</th>
+                <th style="padding: 12px;">Type</th>
+                <th style="padding: 12px;">Project</th>
+                <th style="padding: 12px;">Date Added</th>
+                <th style="padding: 12px;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="5" style="padding: 24px; text-align: center; color: var(--text-secondary);">
+                    <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 16px; display: block; opacity: 0.5;"></i>
+                    No documents uploaded yet.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}GIS Map{% endblock %}
+{% block page_title %}GIS Project Map{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-container {
+        height: 600px;
+        background: url('https://upload.wikimedia.org/wikipedia/commons/e/ea/Equirectangular_projection_SW.jpg') center/cover no-repeat;
+        border-radius: 12px;
+        position: relative;
+        border: var(--glass-border);
+        overflow: hidden;
+    }
+    .map-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card animate-fade-in">
+    <div class="map-container">
+        <div class="map-overlay">
+            <i class="fa-solid fa-map-location-dot" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 20px;"></i>
+            <h3 style="font-size: 1.5rem; margin-bottom: 10px;">Interactive GIS Map</h3>
+            <p style="color: var(--text-secondary); max-width: 400px; text-align: center;">
+                Map integration is ready. {{ projects.count }} project(s) loaded with spatial data (Latitude/Longitude).
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

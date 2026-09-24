@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Recommendations{% endblock %}
+{% block page_title %}AI Recommendations{% endblock %}
+
+{% block content %}
+<div class="glass-card animate-fade-in">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <h2 class="section-title">Suggested Actions</h2>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div style="padding: 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px;">
+            <i class="fa-solid fa-scale-balanced" style="font-size: 2rem; color: #3b82f6; margin-bottom: 16px;"></i>
+            <h3 style="margin-bottom: 8px;">Legal Dispute Resolution</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Initiate fast-track negotiation for Project "Highway Expansion Phase 2" due to high probability of legal delay.</p>
+            <button style="margin-top: 16px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">View Details</button>
+        </div>
+        
+        <div style="padding: 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px;">
+            <i class="fa-solid fa-money-bill-wave" style="font-size: 2rem; color: #10b981; margin-bottom: 16px;"></i>
+            <h3 style="margin-bottom: 8px;">Compensation Disbursement</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Clear pending compensations for "Solar Park Alpha" to avoid stakeholder protests.</p>
+            <button style="margin-top: 16px; background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Action Needed</button>
+        </div>
+        
+        <div style="padding: 20px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px;">
+            <i class="fa-solid fa-house-chimney" style="font-size: 2rem; color: #8b5cf6; margin-bottom: 16px;"></i>
+            <h3 style="margin-bottom: 8px;">Rehabilitation Planning</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Start rehabilitation site setup for Zone B to meet possession deadlines.</p>
+            <button style="margin-top: 16px; background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">View Plan</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

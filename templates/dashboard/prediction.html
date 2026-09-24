@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Prediction{% endblock %}
+{% block page_title %}AI Prediction{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prediction-card {
+        margin-bottom: 24px;
+    }
+    .risk-high { color: var(--danger); }
+    .risk-med { color: var(--warning); }
+    .risk-low { color: var(--success); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card prediction-card animate-fade-in">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <h2 class="section-title">Delay Predictions (Machine Learning Models)</h2>
+    </div>
+    
+    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <th style="padding: 12px;">Project</th>
+                <th style="padding: 12px;">Delay Probability</th>
+                <th style="padding: 12px;">Risk Level</th>
+                <th style="padding: 12px;">Model</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pred in predictions %}
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 12px;">{{ pred.project.project_name }}</td>
+                <td style="padding: 12px;">{{ pred.delay_probability }}%</td>
+                <td style="padding: 12px; font-weight: bold;" class="{% if pred.risk_level == 'HIGH' or pred.risk_level == 'CRITICAL' %}risk-high{% elif pred.risk_level == 'MEDIUM' %}risk-med{% else %}risk-low{% endif %}">
+                    {{ pred.get_risk_level_display }}
+                </td>
+                <td style="padding: 12px;">{{ pred.model_name }} v{{ pred.model_version }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="padding: 24px; text-align: center; color: var(--text-secondary);">No predictions available. Add data to run AI models.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
