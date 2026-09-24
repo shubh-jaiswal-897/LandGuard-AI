@@ -4,10 +4,10 @@
 echo "Building project..."
 
 # Install dependencies
-python -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 # Run migrations (Optional: better to do it manually if using external DB)
-# python manage.py migrate
+# python3 manage.py migrate
 
 # Collect static files
-python manage.py collectstatic --noinput
+python3 manage.py collectstatic --noinput
