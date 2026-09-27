@@ -268,6 +268,61 @@
             animation: fadeIn 0.4s ease forwards;
         }
 
+        /* Mobile Responsiveness */
+        .mobile-toggle {
+            display: none;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            font-size: 1.2rem;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9;
+        }
+        
+        @media (max-width: 992px) {
+            .main-content { padding: 1.5rem; }
+            .page-title { font-size: 1.6rem; }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-toggle { display: flex; }
+            
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .top-header {
+                margin-bottom: 1.5rem;
+            }
+            .page-title {
+                font-size: 1.4rem;
+            }
+            .avatar { width: 38px; height: 38px; }
+            .notification-btn { width: 38px; height: 38px; }
+        }
+
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -312,8 +367,14 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
+            <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('active');"></div>
             <header class="top-header">
-                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.add('open'); document.querySelector('.sidebar-overlay').classList.add('active');">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
                 <div class="user-profile">
                     <div class="notification-btn">
                         <i class="fa-regular fa-bell"></i>

@@ -152,6 +152,18 @@
         background-image: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,100 L0,50 Q25,80 50,40 T100,20 L100,100 Z' fill='rgba(59, 130, 246, 0.2)'/%3E%3Cpath d='M0,50 Q25,80 50,40 T100,20' fill='none' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E");
         background-size: 100% 100%;
     }
+
+    @media (max-width: 992px) {
+        .chart-section, .alerts-section {
+            grid-column: span 12;
+        }
+        .chart-section { min-height: 300px; }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-grid, .stats-container { gap: 16px; margin-bottom: 16px; }
+        .stat-info p { font-size: 1.5rem; }
+    }
 </style>
 {% endblock %}
 

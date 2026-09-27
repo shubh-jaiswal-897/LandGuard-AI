@@ -86,12 +86,27 @@
         animation: spin 1s linear infinite;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .rec-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 30px;
+    }
+    @media (max-width: 768px) {
+        .rec-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .btn-generate { width: 100%; justify-content: center; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="glass-card animate-fade-in" style="border: none; background: transparent; box-shadow: none; padding: 0;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+    <div class="rec-header">
         <div>
             <h2 class="section-title" style="margin-bottom: 5px; font-size: 2rem;">Strategic AI Advisory</h2>
             <p style="color: var(--text-secondary); margin: 0;">Generate real-time, context-aware project recommendations using Gemini 2.5 Flash.</p>

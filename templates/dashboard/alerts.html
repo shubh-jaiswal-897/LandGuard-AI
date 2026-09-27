@@ -150,6 +150,21 @@
     .btn-mark-resolved:hover {
         background: #059669;
     }
+    
+    @media (max-width: 768px) {
+        .alert-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        .alert-card > div:last-child {
+            width: 100%;
+            text-align: left;
+        }
+        .btn-resolve {
+            width: 100%;
+        }
+    }
 </style>
 {% endblock %}
 
