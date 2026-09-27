@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.db.models import Sum, Avg
 from dashboard.models import Project
 from alerts.models import Alert
@@ -49,3 +50,15 @@ def recommendations_view(request):
 
 def documents_view(request):
     return render(request, 'dashboard/documents.html', {})
+
+def run_ai_predictions(request):
+    from prediction.utils import generate_prediction_for_project
+    from dashboard.models import Project
+    try:
+        projects = Project.objects.all()[:3] # Limit to 3 for demo
+        for p in projects:
+            generate_prediction_for_project(p)
+        messages.success(request, f"Successfully ran Gemini AI predictions for {projects.count()} projects.")
+    except Exception as e:
+        messages.error(request, f"AI Error: {str(e)}")
+    return redirect('dashboard:prediction')

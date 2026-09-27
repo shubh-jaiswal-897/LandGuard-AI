@@ -1,40 +1,277 @@
 {% extends 'base.html' %}
 
-{% block title %}GIS Map{% endblock %}
-{% block page_title %}GIS Project Map{% endblock %}
+{% block title %}GIS Map - Disaster Time-Lapse{% endblock %}
+{% block page_title %}Disaster Prediction & History Map{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     .map-container {
-        height: 600px;
-        background: url('https://upload.wikimedia.org/wikipedia/commons/e/ea/Equirectangular_projection_SW.jpg') center/cover no-repeat;
+        height: 650px;
         border-radius: 12px;
-        position: relative;
-        border: var(--glass-border);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         overflow: hidden;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
-    .map-overlay {
+    #map {
+        height: 100%;
+        width: 100%;
+        background-color: #0b0f19;
+    }
+    
+    /* Animation for the disaster ripples */
+    .disaster-ripple {
+        width: 20px;
+        height: 20px;
+        background-color: transparent;
+        border: 2px solid #ff4757;
+        border-radius: 50%;
+        animation: ripple 1.5s linear infinite;
+    }
+    .disaster-predicted {
+        border-color: #ffa502;
+    }
+    
+    @keyframes ripple {
+        0% { transform: scale(0.5); opacity: 1; }
+        100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* Time-lapse Controls */
+    .timeline-control {
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(15, 23, 42, 0.7);
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 15px 30px;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        z-index: 1000;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        width: 80%;
+        max-width: 600px;
+    }
+    .timeline-control button {
+        background: #3b82f6;
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
+        transition: 0.3s;
+    }
+    .timeline-control button:hover {
+        background: #2563eb;
+        transform: scale(1.05);
+    }
+    .timeline-slider {
+        flex-grow: 1;
+        -webkit-appearance: none;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        outline: none;
+    }
+    .timeline-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #3b82f6;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .year-display {
+        font-size: 1.2rem;
+        font-weight: bold;
+        min-width: 60px;
+        text-align: center;
+        color: #60a5fa;
+    }
+    
+    .legend {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(15, 23, 42, 0.85);
+        padding: 15px;
+        border-radius: 12px;
+        z-index: 1000;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 10px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="glass-card animate-fade-in">
+<div class="glass-card animate-fade-in" style="padding: 0; overflow: hidden;">
     <div class="map-container">
-        <div class="map-overlay">
-            <i class="fa-solid fa-map-location-dot" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 20px;"></i>
-            <h3 style="font-size: 1.5rem; margin-bottom: 10px;">Interactive GIS Map</h3>
-            <p style="color: var(--text-secondary); max-width: 400px; text-align: center;">
-                Map integration is ready. {{ projects.count }} project(s) loaded with spatial data (Latitude/Longitude).
-            </p>
+        <div id="map"></div>
+        
+        <div class="legend">
+            <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Disaster Type</div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff4757; box-shadow: 0 0 10px #ff4757;"></div> Previous (Historical)
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffa502; box-shadow: 0 0 10px #ffa502;"></div> Predicted (Future)
+            </div>
+        </div>
+
+        <div class="timeline-control">
+            <button id="playBtn"><i class="fa-solid fa-play"></i></button>
+            <input type="range" id="timeSlider" class="timeline-slider" min="2015" max="2030" value="2015" step="1">
+            <div class="year-display" id="yearDisplay">2015</div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize map
+    const map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView([20.5937, 78.9629], 5); // Center on India
+
+    // Add dark modern tiles (CartoDB Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Zoom control top left
+    L.control.zoom({ position: 'topleft' }).addTo(map);
+
+    // Generate mock disaster data for demonstration
+    // In production, this would be populated via Django context {{ disasters|safe }}
+    const disasters = [];
+    const centerLat = 20.5937, centerLng = 78.9629;
+    
+    for(let i = 0; i < 150; i++) {
+        const year = 2015 + Math.floor(Math.random() * 16); // 2015 to 2030
+        const isPredicted = year > 2024;
+        
+        disasters.push({
+            lat: centerLat + (Math.random() - 0.5) * 20,
+            lng: centerLng + (Math.random() - 0.5) * 20,
+            year: year,
+            type: isPredicted ? 'predicted' : 'historical',
+            intensity: Math.random() * 0.5 + 0.5
+        });
+    }
+
+    // Animation state
+    let currentYear = 2015;
+    let isPlaying = false;
+    let playInterval;
+    let activeMarkers = [];
+
+    const slider = document.getElementById('timeSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const playBtn = document.getElementById('playBtn');
+
+    // Create custom icon for animated ripple
+    const createRippleIcon = (type, intensity) => {
+        const className = type === 'predicted' ? 'disaster-ripple disaster-predicted' : 'disaster-ripple';
+        const size = 20 * intensity;
+        return L.divIcon({
+            html: `<div class="${className}" style="width: ${size}px; height: ${size}px; margin-left: -${size/2}px; margin-top: -${size/2}px;"></div>`,
+            className: '',
+            iconSize: [0, 0]
+        });
+    };
+
+    const updateMapForYear = (year) => {
+        // Clear old markers
+        activeMarkers.forEach(m => map.removeLayer(m));
+        activeMarkers = [];
+        
+        // Find disasters for this year
+        const currentDisasters = disasters.filter(d => d.year === year);
+        
+        // Plot new markers
+        currentDisasters.forEach(d => {
+            const marker = L.marker([d.lat, d.lng], {
+                icon: createRippleIcon(d.type, d.intensity)
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div style="text-align:center; padding: 5px;">
+                    <strong>${d.type === 'predicted' ? 'Predicted Risk' : 'Historical Disaster'}</strong><br>
+                    Year: ${d.year}<br>
+                    Intensity: ${(d.intensity * 10).toFixed(1)}/10
+                </div>
+            `);
+            
+            activeMarkers.push(marker);
+        });
+    };
+
+    const playAnimation = () => {
+        isPlaying = true;
+        playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        
+        playInterval = setInterval(() => {
+            if (currentYear >= 2030) {
+                currentYear = 2015; // Loop back
+            } else {
+                currentYear++;
+            }
+            slider.value = currentYear;
+            yearDisplay.innerText = currentYear;
+            updateMapForYear(currentYear);
+        }, 1500); // Change year every 1.5 seconds
+    };
+
+    const stopAnimation = () => {
+        isPlaying = false;
+        playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        clearInterval(playInterval);
+    };
+
+    // Event listeners
+    playBtn.addEventListener('click', () => {
+        if (isPlaying) {
+            stopAnimation();
+        } else {
+            playAnimation();
+        }
+    });
+
+    slider.addEventListener('input', (e) => {
+        stopAnimation();
+        currentYear = parseInt(e.target.value);
+        yearDisplay.innerText = currentYear;
+        updateMapForYear(currentYear);
+    });
+
+    // Initialize first view
+    updateMapForYear(currentYear);
+</script>
 {% endblock %}

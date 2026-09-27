@@ -54,3 +54,17 @@ class LandAcquisition(models.Model):
 
     def __str__(self):
         return f"Acq: {self.acquisition_id} for {self.project.project_name}"
+
+class GovernmentAPIConfig(models.Model):
+    api_name = models.CharField(max_length=100, default='Default Government API')
+    base_url = models.URLField(help_text="Base URL for the Government API")
+    api_key = models.CharField(max_length=255, help_text="API Key or Token for authentication")
+    is_active = models.BooleanField(default=True, help_text="Set to True to use this configuration")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Government API Configuration"
+        verbose_name_plural = "Government API Configurations"
+
+    def __str__(self):
+        return f"{self.api_name} - {'Active' if self.is_active else 'Inactive'}"

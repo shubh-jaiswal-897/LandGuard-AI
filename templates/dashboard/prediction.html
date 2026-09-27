@@ -16,9 +16,20 @@
 
 {% block content %}
 <div class="glass-card prediction-card animate-fade-in">
-    <div class="section-header" style="margin-bottom: 20px;">
+    <div class="section-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
         <h2 class="section-title">Delay Predictions (Machine Learning Models)</h2>
+        <a href="{% url 'dashboard:run_ai_predictions' %}" class="btn" style="background: var(--accent-primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-robot"></i> Run Gemini AI</a>
     </div>
+    
+    {% if messages %}
+    <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+        <div style="padding: 10px; border-radius: 8px; background: {% if message.tags == 'error' %}var(--danger){% else %}var(--success){% endif %}; color: white;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     
     <table style="width: 100%; text-align: left; border-collapse: collapse;">
         <thead>
@@ -26,6 +37,7 @@
                 <th style="padding: 12px;">Project</th>
                 <th style="padding: 12px;">Delay Probability</th>
                 <th style="padding: 12px;">Risk Level</th>
+                <th style="padding: 12px;">Key Risk Factors (XAI)</th>
                 <th style="padding: 12px;">Model</th>
             </tr>
         </thead>
@@ -33,15 +45,32 @@
             {% for pred in predictions %}
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                 <td style="padding: 12px;">{{ pred.project.project_name }}</td>
-                <td style="padding: 12px;">{{ pred.delay_probability }}%</td>
+                <td style="padding: 12px;">
+                    <div style="font-weight: bold; font-size: 1.1rem;">{{ pred.delay_probability }}%</div>
+                </td>
                 <td style="padding: 12px; font-weight: bold;" class="{% if pred.risk_level == 'HIGH' or pred.risk_level == 'CRITICAL' %}risk-high{% elif pred.risk_level == 'MEDIUM' %}risk-med{% else %}risk-low{% endif %}">
                     {{ pred.get_risk_level_display }}
                 </td>
-                <td style="padding: 12px;">{{ pred.model_name }} v{{ pred.model_version }}</td>
+                <td style="padding: 12px;">
+                    {% for factor in pred.risk_factors.all|slice:":3" %}
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 3px;">
+                            <span style="color: var(--text-secondary);">{{ factor.factor_name }}</span>
+                            <span style="font-weight: bold; color: var(--accent-primary);">{{ factor.impact_value }}</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px;">
+                            <div style="background: {% if factor.impact_value > 0.7 %}var(--danger){% elif factor.impact_value > 0.4 %}var(--warning){% else %}var(--success){% endif %}; height: 100%; border-radius: 3px; width: calc({{ factor.impact_value }} * 100%);"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <span style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">No specific factors identified.</span>
+                    {% endfor %}
+                </td>
+                <td style="padding: 12px; font-size: 0.9rem; color: var(--text-secondary);">{{ pred.model_name }}<br><small>v{{ pred.model_version }}</small></td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4" style="padding: 24px; text-align: center; color: var(--text-secondary);">No predictions available. Add data to run AI models.</td>
+                <td colspan="5" style="padding: 24px; text-align: center; color: var(--text-secondary);">No predictions available. Add data to run AI models.</td>
             </tr>
             {% endfor %}
         </tbody>
