@@ -253,7 +253,7 @@
         
         try {
             // Call the real Gemini AI Backend endpoint
-            const response = await fetch(`/dashboard/alerts/${alertId}/ai-resolve/`);
+            const response = await fetch(`/alerts/${alertId}/ai-resolve/`);
             const data = await response.json();
             
             let stepsHTML = '';

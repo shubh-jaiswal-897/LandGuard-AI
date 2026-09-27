@@ -12,4 +12,5 @@ urlpatterns = [
     path('documents/', views.documents_view, name='documents'),
     path('run-ai-predictions/', views.run_ai_predictions, name='run_ai_predictions'),
     path('alerts/<int:alert_id>/ai-resolve/', views.get_ai_resolution, name='get_ai_resolution'),
+    path('ai-recommendations/', views.generate_global_recommendations, name='generate_global_recommendations'),
 ]

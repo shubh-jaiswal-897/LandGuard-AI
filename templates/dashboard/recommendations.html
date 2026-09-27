@@ -3,33 +3,182 @@
 {% block title %}Recommendations{% endblock %}
 {% block page_title %}AI Recommendations{% endblock %}
 
+{% block extra_css %}
+<style>
+    .rec-card {
+        padding: 24px;
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .rec-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Theme variants */
+    .rec-card.theme-blue {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .rec-card.theme-blue:hover { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2); }
+    .rec-card.theme-blue i { color: #3b82f6; }
+    .rec-card.theme-blue button { background: #3b82f6; }
+    
+    .rec-card.theme-green {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .rec-card.theme-green:hover { box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); }
+    .rec-card.theme-green i { color: #10b981; }
+    .rec-card.theme-green button { background: #10b981; }
+    
+    .rec-card.theme-purple {
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+    .rec-card.theme-purple:hover { box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2); }
+    .rec-card.theme-purple i { color: #8b5cf6; }
+    .rec-card.theme-purple button { background: #8b5cf6; }
+    
+    .btn-generate {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+    }
+    .btn-generate:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Loading state */
+    .ai-loading-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 0;
+        gap: 20px;
+    }
+    .scanner {
+        width: 100px;
+        height: 100px;
+        border: 4px solid rgba(245, 158, 11, 0.2);
+        border-top-color: #f59e0b;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="glass-card animate-fade-in">
-    <div class="section-header" style="margin-bottom: 20px;">
-        <h2 class="section-title">Suggested Actions</h2>
+<div class="glass-card animate-fade-in" style="border: none; background: transparent; box-shadow: none; padding: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+        <div>
+            <h2 class="section-title" style="margin-bottom: 5px; font-size: 2rem;">Strategic AI Advisory</h2>
+            <p style="color: var(--text-secondary); margin: 0;">Generate real-time, context-aware project recommendations using Gemini 2.5 Flash.</p>
+        </div>
+        <button class="btn-generate" id="generateBtn" onclick="generateRecommendations()">
+            <i class="fa-solid fa-brain"></i> Generate AI Strategy
+        </button>
     </div>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <div style="padding: 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px;">
-            <i class="fa-solid fa-scale-balanced" style="font-size: 2rem; color: #3b82f6; margin-bottom: 16px;"></i>
-            <h3 style="margin-bottom: 8px;">Legal Dispute Resolution</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Initiate fast-track negotiation for Project "Highway Expansion Phase 2" due to high probability of legal delay.</p>
-            <button style="margin-top: 16px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">View Details</button>
-        </div>
-        
-        <div style="padding: 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px;">
-            <i class="fa-solid fa-money-bill-wave" style="font-size: 2rem; color: #10b981; margin-bottom: 16px;"></i>
-            <h3 style="margin-bottom: 8px;">Compensation Disbursement</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Clear pending compensations for "Solar Park Alpha" to avoid stakeholder protests.</p>
-            <button style="margin-top: 16px; background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Action Needed</button>
-        </div>
-        
-        <div style="padding: 20px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px;">
-            <i class="fa-solid fa-house-chimney" style="font-size: 2rem; color: #8b5cf6; margin-bottom: 16px;"></i>
-            <h3 style="margin-bottom: 8px;">Rehabilitation Planning</h3>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Start rehabilitation site setup for Zone B to meet possession deadlines.</p>
-            <button style="margin-top: 16px; background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">View Plan</button>
-        </div>
+    <!-- Empty State -->
+    <div id="emptyState" class="glass-card" style="padding: 60px; text-align: center; border: 1px dashed rgba(255,255,255,0.2);">
+        <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
+        <h3 style="margin-bottom: 10px; color: #fff;">No Strategies Generated Yet</h3>
+        <p style="color: var(--text-secondary);">Click the "Generate AI Strategy" button above to have Gemini analyze your active projects and alerts.</p>
+    </div>
+    
+    <!-- Loading State -->
+    <div id="loadingState" class="ai-loading-state glass-card">
+        <div class="scanner"></div>
+        <h3 style="color: #f59e0b;">Gemini AI is analyzing project metrics...</h3>
+        <p style="color: var(--text-secondary);">Cross-referencing delays, budgets, and alerts to form a strategic plan.</p>
+    </div>
+    
+    <!-- Results Container -->
+    <div id="resultsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; display: none;">
+        <!-- Injected via JS -->
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function generateRecommendations() {
+        const btn = document.getElementById('generateBtn');
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        const resultsContainer = document.getElementById('resultsContainer');
+        
+        // Update UI for loading
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        emptyState.style.display = 'none';
+        resultsContainer.style.display = 'none';
+        loadingState.style.display = 'flex';
+        
+        try {
+            const response = await fetch('/ai-recommendations/');
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Build cards
+            let cardsHTML = '';
+            data.recommendations.forEach(rec => {
+                const themeClass = `theme-${rec.color_theme || 'blue'}`;
+                cardsHTML += `
+                    <div class="rec-card ${themeClass}">
+                        <i class="fa-solid ${rec.icon || 'fa-chart-line'}" style="font-size: 2.2rem; margin-bottom: 16px;"></i>
+                        <h3 style="margin-bottom: 12px; font-size: 1.3rem; color: #fff;">${rec.title}</h3>
+                        <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; flex-grow: 1;">${rec.description}</p>
+                        <button style="margin-top: 20px; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: opacity 0.2s;">
+                            Apply Strategy <i class="fa-solid fa-arrow-right" style="margin-left: 8px; font-size: 0.9rem; color: white;"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = cardsHTML;
+            resultsContainer.style.display = 'grid'; // ensure it reverts from none
+            
+        } catch (err) {
+            resultsContainer.innerHTML = `
+                <div class="glass-card" style="grid-column: 1 / -1; border-color: var(--danger); text-align: center; padding: 40px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+                    <h3 style="color: #fff; margin-bottom: 10px;">Failed to Generate Strategy</h3>
+                    <p style="color: var(--danger);">${err.message || 'A network error occurred.'}</p>
+                </div>
+            `;
+            resultsContainer.style.display = 'block';
+        } finally {
+            // Restore UI
+            loadingState.style.display = 'none';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-brain"></i> Generate AI Strategy';
+        }
+    }
+</script>
 {% endblock %}

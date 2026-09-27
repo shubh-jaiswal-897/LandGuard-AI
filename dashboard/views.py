@@ -111,3 +111,64 @@ def get_ai_resolution(request, alert_id):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+def generate_global_recommendations(request):
+    from django.http import JsonResponse
+    import google.generativeai as genai
+    from dashboard.models import GovernmentAPIConfig, Project
+    from alerts.models import Alert
+    import json
+    
+    try:
+        config = GovernmentAPIConfig.objects.filter(is_active=True, provider='GEMINI').first()
+        if not config or not config.api_key:
+            return JsonResponse({'error': 'No active Gemini AI configuration found.'}, status=400)
+            
+        # Gather context
+        projects = Project.objects.all()[:5]
+        active_alerts = Alert.objects.filter(status='Open')[:5]
+        
+        context_str = "Recent Projects:\n"
+        for p in projects:
+            context_str += f"- {p.project_name} (Land Acquired: {p.acquired_land_area}/{p.total_land_area} acres)\n"
+            
+        context_str += "\nActive Alerts:\n"
+        for a in active_alerts:
+            context_str += f"- {a.alert_type}: {a.message} (Severity: {a.severity})\n"
+            
+        genai.configure(api_key=config.api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        prompt = f"""
+        You are an expert government infrastructure AI advisor.
+        Based on the following system state:
+        
+        {context_str}
+        
+        Provide exactly 3 strategic, high-level recommendations to improve project efficiency, reduce delays, or mitigate risks.
+        Return the response ONLY as a valid JSON array of objects. Each object must have these exact keys:
+        - "title" (Short string, e.g., "Legal Dispute Resolution")
+        - "description" (Detailed action plan, 2 sentences max)
+        - "icon" (A FontAwesome icon class, e.g., "fa-scale-balanced", "fa-money-bill-wave", "fa-house-chimney", "fa-gavel", "fa-handshake")
+        - "color_theme" (Must be exactly one of these strings: "blue", "green", "purple")
+        
+        Make sure the output is pure JSON. Example:
+        [{{ "title": "...", "description": "...", "icon": "fa-gavel", "color_theme": "blue" }}]
+        """
+        
+        response = model.generate_content(prompt)
+        raw_text = response.text.strip()
+        
+        if raw_text.startswith("```json"): raw_text = raw_text[7:]
+        elif raw_text.startswith("```"): raw_text = raw_text[3:]
+        if raw_text.endswith("```"): raw_text = raw_text[:-3]
+            
+        recommendations = json.loads(raw_text.strip())
+        
+        if not isinstance(recommendations, list):
+            raise Exception("Invalid JSON structure returned by AI.")
+            
+        return JsonResponse({'recommendations': recommendations})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
