@@ -153,10 +153,17 @@ def sync_live_data(request):
             )
             
             # Create Prediction
+            factors = [
+                {"factor": "Legal Disputes", "importance": round(random.uniform(0.3, 0.6), 2)},
+                {"factor": "Fund Shortage", "importance": round(random.uniform(0.1, 0.3), 2)},
+                {"factor": "Farmer Protests", "importance": round(random.uniform(0.2, 0.5), 2)}
+            ]
+            
             Prediction.objects.create(
                 project=proj,
                 delay_probability=round(random.uniform(75.0, 98.0), 2),
-                risk_level='CRITICAL'
+                risk_level='CRITICAL',
+                key_factors=factors
             )
             
             # Create Alert
