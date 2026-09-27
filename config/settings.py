@@ -84,12 +84,29 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+import shutil
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Vercel Serverless SQLite Hack
+if os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_URL'):
+    # Vercel's root directory is read-only, but /tmp is writable
+    tmp_db_path = '/tmp/db.sqlite3'
+    source_db_path = os.path.join(BASE_DIR, 'db.sqlite3')
+    
+    # Copy the pre-populated database to /tmp if it hasn't been copied yet during this cold boot
+    if not os.path.exists(tmp_db_path) and os.path.exists(source_db_path):
+        try:
+            shutil.copy2(source_db_path, tmp_db_path)
+        except Exception as e:
+            pass
+            
+    DATABASES['default']['NAME'] = tmp_db_path
 
 
 # Password validation
