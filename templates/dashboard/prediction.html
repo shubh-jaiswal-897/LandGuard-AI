@@ -1,79 +1,284 @@
 {% extends 'base.html' %}
 
 {% block title %}AI Prediction{% endblock %}
-{% block page_title %}AI Prediction{% endblock %}
+{% block page_title %}AI Prediction Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
-    .prediction-card {
-        margin-bottom: 24px;
+    .prediction-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
     }
-    .risk-high { color: var(--danger); }
-    .risk-med { color: var(--warning); }
-    .risk-low { color: var(--success); }
+    
+    .pred-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .pred-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .pred-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .project-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        line-height: 1.3;
+    }
+    
+    .model-badge {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        white-space: nowrap;
+        margin-left: 10px;
+    }
+    
+    .pred-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    
+    .prob-circle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(15,23,42,1) 60%, transparent 61%), conic-gradient(var(--accent-primary) var(--percentage), rgba(255,255,255,0.1) 0);
+        position: relative;
+    }
+    
+    .prob-circle-inner {
+        position: absolute;
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #fff;
+    }
+    
+    .prob-circle-label {
+        position: absolute;
+        bottom: -25px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    
+    .risk-badge {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .risk-high, .risk-critical { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .risk-medium { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .risk-low { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+    
+    .xai-section {
+        flex-grow: 1;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+    }
+    
+    .xai-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .xai-factor {
+        margin-bottom: 12px;
+    }
+    .xai-factor:last-child {
+        margin-bottom: 0;
+    }
+    
+    .xai-factor-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+    
+    .xai-bar-bg {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .xai-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 1s ease-out;
+    }
+    
+    .btn-run-ai {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        transition: all 0.3s;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-run-ai::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    
+    .btn-run-ai:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        color: white;
+    }
+    
+    .btn-run-ai:hover::after {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .pulse-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+        100% { transform: scale(1); }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="glass-card prediction-card animate-fade-in">
-    <div class="section-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <h2 class="section-title">Delay Predictions (Machine Learning Models)</h2>
-        <a href="{% url 'dashboard:run_ai_predictions' %}" class="btn" style="background: var(--accent-primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-robot"></i> Run Gemini AI</a>
+<div class="animate-fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; padding: 0 10px;">
+        <div>
+            <h2 class="section-title" style="margin-bottom: 5px; font-size: 2rem;">AI Delay Predictions</h2>
+            <p style="color: var(--text-secondary); margin: 0;">Powered by Explainable AI (XAI) and Gemini</p>
+        </div>
+        <a href="{% url 'dashboard:run_ai_predictions' %}" class="btn-run-ai">
+            <i class="fa-solid fa-sparkles pulse-icon"></i> Run Gemini AI Analysis
+        </a>
     </div>
     
     {% if messages %}
-    <div style="margin-bottom: 20px;">
+    <div style="margin-bottom: 25px;">
         {% for message in messages %}
-        <div style="padding: 10px; border-radius: 8px; background: {% if message.tags == 'error' %}var(--danger){% else %}var(--success){% endif %}; color: white;">
+        <div style="padding: 15px 20px; border-radius: 12px; background: {% if message.tags == 'error' %}rgba(239, 68, 68, 0.2){% else %}rgba(16, 185, 129, 0.2){% endif %}; color: white; border: 1px solid {% if message.tags == 'error' %}rgba(239, 68, 68, 0.4){% else %}rgba(16, 185, 129, 0.4){% endif %}; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
             {{ message }}
         </div>
         {% endfor %}
     </div>
     {% endif %}
     
-    <table style="width: 100%; text-align: left; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <th style="padding: 12px;">Project</th>
-                <th style="padding: 12px;">Delay Probability</th>
-                <th style="padding: 12px;">Risk Level</th>
-                <th style="padding: 12px;">Key Risk Factors (XAI)</th>
-                <th style="padding: 12px;">Model</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for pred in predictions %}
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 12px;">{{ pred.project.project_name }}</td>
-                <td style="padding: 12px;">
-                    <div style="font-weight: bold; font-size: 1.1rem;">{{ pred.delay_probability }}%</div>
-                </td>
-                <td style="padding: 12px; font-weight: bold;" class="{% if pred.risk_level == 'HIGH' or pred.risk_level == 'CRITICAL' %}risk-high{% elif pred.risk_level == 'MEDIUM' %}risk-med{% else %}risk-low{% endif %}">
+    {% if not predictions %}
+    <div class="glass-card" style="text-align: center; padding: 60px 20px;">
+        <i class="fa-solid fa-robot" style="font-size: 4rem; color: rgba(255,255,255,0.1); margin-bottom: 20px;"></i>
+        <h3>No AI Predictions Found</h3>
+        <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 20px auto;">Run the Gemini AI Analysis to generate intelligent delay predictions and risk factors for your active projects.</p>
+    </div>
+    {% else %}
+    <div class="prediction-container">
+        {% for pred in predictions %}
+        <div class="pred-card">
+            <div class="pred-header">
+                <h3 class="project-name">{{ pred.project.project_name }}</h3>
+                <span class="model-badge"><i class="fa-solid fa-microchip"></i> {{ pred.model_name }}</span>
+            </div>
+            
+            <div class="pred-stats">
+                <div class="prob-circle" style="--percentage: {{ pred.delay_probability }}%; --accent-primary: {% if pred.delay_probability > 70 %}#ef4444{% elif pred.delay_probability > 40 %}#f59e0b{% else %}#10b981{% endif %};">
+                    <div class="prob-circle-inner">{{ pred.delay_probability }}<span style="font-size:0.8rem;">%</span></div>
+                    <div class="prob-circle-label">Delay Risk</div>
+                </div>
+                
+                <div class="risk-badge {% if pred.risk_level == 'HIGH' or pred.risk_level == 'CRITICAL' %}risk-high{% elif pred.risk_level == 'MEDIUM' %}risk-medium{% else %}risk-low{% endif %}">
+                    {% if pred.risk_level == 'HIGH' or pred.risk_level == 'CRITICAL' %}<i class="fa-solid fa-triangle-exclamation"></i>
+                    {% elif pred.risk_level == 'MEDIUM' %}<i class="fa-solid fa-bell"></i>
+                    {% else %}<i class="fa-solid fa-shield-check"></i>{% endif %}
                     {{ pred.get_risk_level_display }}
-                </td>
-                <td style="padding: 12px;">
-                    {% for factor in pred.risk_factors.all|slice:":3" %}
-                    <div style="margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 3px;">
-                            <span style="color: var(--text-secondary);">{{ factor.factor_name }}</span>
-                            <span style="font-weight: bold; color: var(--accent-primary);">{{ factor.impact_value }}</span>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px;">
-                            <div style="background: {% if factor.impact_value > 0.7 %}var(--danger){% elif factor.impact_value > 0.4 %}var(--warning){% else %}var(--success){% endif %}; height: 100%; border-radius: 3px; width: calc({{ factor.impact_value }} * 100%);"></div>
-                        </div>
+                </div>
+            </div>
+            
+            <div class="xai-section">
+                <div class="xai-title">
+                    <i class="fa-solid fa-chart-network" style="color: #8b5cf6;"></i> Key Risk Factors (XAI)
+                </div>
+                
+                {% for factor in pred.risk_factors.all|slice:":3" %}
+                <div class="xai-factor">
+                    <div class="xai-factor-header">
+                        <span style="color: #e2e8f0; font-weight: 500;">{{ factor.factor_name }}</span>
+                        <span style="color: {% if factor.impact_value > 0.7 %}#fca5a5{% elif factor.impact_value > 0.4 %}#fcd34d{% else %}#6ee7b7{% endif %}; font-weight: bold;">
+                            {{ factor.impact_value }}
+                        </span>
                     </div>
-                    {% empty %}
-                    <span style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">No specific factors identified.</span>
-                    {% endfor %}
-                </td>
-                <td style="padding: 12px; font-size: 0.9rem; color: var(--text-secondary);">{{ pred.model_name }}<br><small>v{{ pred.model_version }}</small></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" style="padding: 24px; text-align: center; color: var(--text-secondary);">No predictions available. Add data to run AI models.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <div class="xai-bar-bg">
+                        <div class="xai-bar-fill" style="width: calc({{ factor.impact_value }} * 100%); background: {% if factor.impact_value > 0.7 %}#ef4444{% elif factor.impact_value > 0.4 %}#f59e0b{% else %}#10b981{% endif %};"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; color: var(--text-secondary); padding: 10px 0; font-style: italic; font-size: 0.9rem;">
+                    No specific factors identified.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -12,8 +12,8 @@ def generate_prediction_for_project(project):
     # Configure Gemini
     genai.configure(api_key=config.api_key)
     
-    # Use a solid model (e.g., gemini-1.5-flash which is fast and supports JSON)
-    model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+    # Use the stable gemini-pro model
+    model = genai.GenerativeModel('gemini-pro')
     
     # Construct the prompt
     prompt = f"""
@@ -49,7 +49,15 @@ def generate_prediction_for_project(project):
     response = model.generate_content(prompt)
     
     try:
-        data = json.loads(response.text)
+        raw_text = response.text.strip()
+        if raw_text.startswith("```json"):
+            raw_text = raw_text[7:]
+        elif raw_text.startswith("```"):
+            raw_text = raw_text[3:]
+        if raw_text.endswith("```"):
+            raw_text = raw_text[:-3]
+        
+        data = json.loads(raw_text.strip())
         
         # Save Prediction
         prediction, created = Prediction.objects.update_or_create(
@@ -57,7 +65,7 @@ def generate_prediction_for_project(project):
             defaults={
                 'delay_probability': data.get('delay_probability', 50),
                 'risk_level': data.get('risk_level', 'MEDIUM'),
-                'model_name': 'Gemini 1.5 Flash',
+                'model_name': 'Gemini AI',
                 'model_version': '1.0'
             }
         )
