@@ -376,10 +376,10 @@
                     <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
                 </div>
                 <div class="user-profile">
-                    <div class="notification-btn">
+                    <a href="{% url 'dashboard:alerts' %}" class="notification-btn" style="text-decoration: none;">
                         <i class="fa-regular fa-bell"></i>
                         <span class="notification-badge"></span>
-                    </div>
+                    </a>
                     <div class="avatar">
                         <img src="https://ui-avatars.com/api/?name=User&background=random&color=fff" alt="User Profile">
                     </div>
