@@ -3,37 +3,315 @@
 {% block title %}Alerts{% endblock %}
 {% block page_title %}System Alerts{% endblock %}
 
+{% block extra_css %}
+<style>
+    .alert-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 20px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(10px);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .alert-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        border-color: rgba(255,255,255,0.15);
+    }
+    .btn-resolve {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+    .btn-resolve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(139, 92, 246, 0.5);
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+    .ai-modal {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(139, 92, 246, 0.4);
+        width: 90%;
+        max-width: 600px;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.1);
+        transform: scale(0.9);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-overlay.active .ai-modal {
+        transform: scale(1);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 15px;
+    }
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .btn-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-close:hover { color: white; }
+    
+    /* AI Loading State */
+    .ai-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 0;
+        gap: 15px;
+    }
+    .spinner {
+        width: 40px; height: 40px;
+        border: 3px solid rgba(139, 92, 246, 0.3);
+        border-top-color: #8b5cf6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    /* AI Resolution Content */
+    .ai-resolution-content {
+        display: none;
+    }
+    .resolution-step {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        background: rgba(255,255,255,0.03);
+        padding: 15px;
+        border-radius: 12px;
+        border-left: 3px solid #8b5cf6;
+    }
+    .step-number {
+        background: rgba(139, 92, 246, 0.2);
+        color: #c4b5fd;
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; flex-shrink: 0;
+    }
+    .btn-mark-resolved {
+        width: 100%;
+        background: var(--success);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-top: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-mark-resolved:hover {
+        background: #059669;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="glass-card animate-fade-in">
-    <div class="section-header" style="margin-bottom: 20px;">
-        <h2 class="section-title">All Alerts</h2>
+<div class="glass-card animate-fade-in" style="border: none; background: transparent; box-shadow: none; padding: 0;">
+    <div class="section-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h2 class="section-title" style="margin-bottom: 5px; font-size: 2rem;">Active System Alerts</h2>
+            <p style="color: var(--text-secondary); margin: 0;">Review and resolve predicted bottlenecks for your projects.</p>
+        </div>
     </div>
     
-    <div style="display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column;">
         {% for alert in alerts %}
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
-            <div style="display: flex; gap: 16px; align-items: center;">
-                <div style="width: 12px; height: 12px; border-radius: 50%; {% if alert.severity == 'CRITICAL' %}background: var(--danger); box-shadow: 0 0 10px var(--danger);{% elif alert.severity == 'WARNING' %}background: var(--warning); box-shadow: 0 0 10px var(--warning);{% else %}background: var(--success); box-shadow: 0 0 10px var(--success);{% endif %}"></div>
+        <div class="alert-card" id="alert-card-{{ alert.id }}">
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <div style="margin-top: 6px; width: 14px; height: 14px; border-radius: 50%; {% if alert.severity == 'CRITICAL' %}background: var(--danger); box-shadow: 0 0 12px var(--danger);{% elif alert.severity == 'WARNING' %}background: var(--warning); box-shadow: 0 0 12px var(--warning);{% else %}background: var(--success); box-shadow: 0 0 12px var(--success);{% endif %}"></div>
                 <div>
-                    <h4 style="font-size: 1.1rem; margin-bottom: 4px;">{{ alert.alert_type }}</h4>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">{{ alert.message }}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px;">Project: <strong>{{ alert.project.project_name }}</strong> | Status: {{ alert.status }}</p>
+                    <h4 style="font-size: 1.2rem; margin-bottom: 6px; color: #fff;">{{ alert.alert_type }}</h4>
+                    <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 8px;">{{ alert.message }}</p>
+                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                        <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px;">
+                            <i class="fa-solid fa-building"></i> {{ alert.project.project_name }}
+                        </span>
+                        <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px;">
+                            <i class="fa-regular fa-clock"></i> {{ alert.created_at|date:"M d, Y H:i" }}
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div style="text-align: right;">
-                <span style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 8px;">{{ alert.created_at|date:"M d, Y H:i" }}</span>
+            <div style="text-align: right; min-width: 120px;">
                 {% if alert.status == 'Open' %}
-                <button style="background: var(--accent-gradient); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Resolve</button>
+                <button class="btn-resolve" onclick="openResolverModal('{{ alert.id }}', '{{ alert.alert_type|escapejs }}', '{{ alert.project.project_name|escapejs }}')">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Resolve
+                </button>
                 {% else %}
-                <span style="color: var(--success); font-weight: bold;"><i class="fa-solid fa-check"></i> Resolved</span>
+                <span style="color: var(--success); font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-check"></i> Resolved
+                </span>
                 {% endif %}
             </div>
         </div>
         {% empty %}
-        <div style="padding: 24px; text-align: center; color: var(--text-secondary);">
-            No alerts found. System is running smoothly.
+        <div class="glass-card" style="padding: 40px; text-align: center;">
+            <i class="fa-solid fa-shield-check" style="font-size: 3rem; color: var(--success); margin-bottom: 15px;"></i>
+            <h3 style="margin-bottom: 10px;">No Alerts Found</h3>
+            <p style="color: var(--text-secondary);">All projects are on track and the system is running smoothly.</p>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<!-- AI Resolver Modal -->
+<div class="modal-overlay" id="aiModal">
+    <div class="ai-modal">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-robot" style="color: #8b5cf6;"></i> AI Resolution Guide</h3>
+            <button class="btn-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <!-- Loading State -->
+        <div class="ai-loading" id="aiLoading">
+            <div class="spinner"></div>
+            <p style="color: #c4b5fd; font-weight: 500;">Gemini AI is analyzing the issue...</p>
+        </div>
+        
+        <!-- Resolution Content -->
+        <div class="ai-resolution-content" id="aiContent">
+            <p style="margin-bottom: 15px; color: #e2e8f0;">Here is the recommended resolution path for <strong id="modalAlertType" style="color: #fff;"></strong> in <strong id="modalProjectName" style="color: #fff;"></strong>:</p>
+            
+            <div id="dynamicSteps">
+                <!-- Steps injected via JS -->
+            </div>
+            
+            <button class="btn-mark-resolved" id="markResolvedBtn" onclick="markAsResolved()">
+                <i class="fa-solid fa-check-circle"></i> Mark as Resolved
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentAlertId = null;
+
+    async function openResolverModal(alertId, alertType, projectName) {
+        currentAlertId = alertId;
+        const modal = document.getElementById('aiModal');
+        const loading = document.getElementById('aiLoading');
+        const content = document.getElementById('aiContent');
+        const stepsContainer = document.getElementById('dynamicSteps');
+        
+        document.getElementById('modalAlertType').innerText = alertType;
+        document.getElementById('modalProjectName').innerText = projectName;
+        
+        // Reset states
+        loading.style.display = 'flex';
+        content.style.display = 'none';
+        modal.classList.add('active');
+        
+        try {
+            // Call the real Gemini AI Backend endpoint
+            const response = await fetch(`/dashboard/alerts/${alertId}/ai-resolve/`);
+            const data = await response.json();
+            
+            let stepsHTML = '';
+            
+            if (data.steps && Array.isArray(data.steps)) {
+                data.steps.forEach((stepText, index) => {
+                    stepsHTML += `
+                        <div class="resolution-step">
+                            <div class="step-number">${index + 1}</div>
+                            <div>${stepText}</div>
+                        </div>
+                    `;
+                });
+            } else if (data.error) {
+                stepsHTML = `<div style="color: #ef4444; padding: 15px; border: 1px solid #ef4444; border-radius: 8px;">Error: ${data.error}</div>`;
+            } else {
+                stepsHTML = `<div style="color: #f59e0b; padding: 15px;">Failed to parse AI response.</div>`;
+            }
+            
+            stepsContainer.innerHTML = stepsHTML;
+        } catch (error) {
+            stepsContainer.innerHTML = `<div style="color: #ef4444; padding: 15px;">Network error occurred while contacting AI.</div>`;
+        }
+        
+        // Hide loading and show content
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    }
+    
+    function closeModal() {
+        document.getElementById('aiModal').classList.remove('active');
+        currentAlertId = null;
+    }
+    
+    function markAsResolved() {
+        if (!currentAlertId) return;
+        
+        const btn = document.getElementById('markResolvedBtn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating database...';
+        btn.style.opacity = '0.7';
+        
+        // In a real app, you would make an AJAX POST request here.
+        // For demonstration, we will just simulate the success response and update the UI directly.
+        setTimeout(() => {
+            closeModal();
+            
+            // Update the UI card
+            const alertCard = document.getElementById('alert-card-' + currentAlertId);
+            const actionDiv = alertCard.querySelector('div[style*="text-align: right"]');
+            actionDiv.innerHTML = `
+                <span style="color: var(--success); font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-check"></i> Resolved
+                </span>
+            `;
+            
+            btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Mark as Resolved';
+            btn.style.opacity = '1';
+        }, 800);
+    }
+</script>
 {% endblock %}

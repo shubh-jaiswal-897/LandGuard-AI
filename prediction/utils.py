@@ -12,8 +12,8 @@ def generate_prediction_for_project(project):
     # Configure Gemini
     genai.configure(api_key=config.api_key)
     
-    # Use the stable gemini-pro model
-    model = genai.GenerativeModel('gemini-pro')
+    # Use the stable gemini-2.5-flash model
+    model = genai.GenerativeModel('gemini-2.5-flash')
     
     # Construct the prompt
     prompt = f"""

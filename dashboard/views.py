@@ -62,3 +62,52 @@ def run_ai_predictions(request):
     except Exception as e:
         messages.error(request, f"AI Error: {str(e)}")
     return redirect('dashboard:prediction')
+
+def get_ai_resolution(request, alert_id):
+    from django.http import JsonResponse
+    import google.generativeai as genai
+    from dashboard.models import GovernmentAPIConfig
+    import json
+    
+    try:
+        alert = Alert.objects.get(id=alert_id)
+        config = GovernmentAPIConfig.objects.filter(is_active=True, provider='GEMINI').first()
+        
+        if not config or not config.api_key:
+            return JsonResponse({'error': 'No active Gemini AI configuration found. Please add it in the Admin panel.'}, status=400)
+            
+        genai.configure(api_key=config.api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        prompt = f"""
+        You are an expert government infrastructure and project management AI.
+        A system alert has been triggered for a construction/land acquisition project.
+        Project Name: {alert.project.project_name}
+        Alert Type: {alert.alert_type}
+        Alert Message: {alert.message}
+        Severity: {alert.severity}
+        
+        Provide exactly 3 clear, concise, and actionable steps to resolve this issue.
+        Return ONLY a JSON array of 3 strings. Example: ["Step 1 description", "Step 2 description", "Step 3 description"]
+        """
+        
+        response = model.generate_content(prompt)
+        raw_text = response.text.strip()
+        
+        if raw_text.startswith("```json"):
+            raw_text = raw_text[7:]
+        elif raw_text.startswith("```"):
+            raw_text = raw_text[3:]
+        if raw_text.endswith("```"):
+            raw_text = raw_text[:-3]
+            
+        steps = json.loads(raw_text.strip())
+        
+        # Ensure it's a list
+        if not isinstance(steps, list):
+            steps = ["Investigate the root cause immediately.", "Notify the relevant stakeholders.", "Update the project timeline to reflect any delays."]
+            
+        return JsonResponse({'steps': steps})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

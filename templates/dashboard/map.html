@@ -8,6 +8,7 @@
 <style>
     .map-container {
         height: 650px;
+        width: 100%;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         overflow: hidden;
@@ -18,24 +19,47 @@
         height: 100%;
         width: 100%;
         background-color: #0b0f19;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
     
     /* Animation for the disaster ripples */
-    .disaster-ripple {
-        width: 20px;
-        height: 20px;
-        background-color: transparent;
-        border: 2px solid #ff4757;
-        border-radius: 50%;
-        animation: ripple 1.5s linear infinite;
+    .disaster-marker {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .disaster-predicted {
-        border-color: #ffa502;
+    .disaster-core {
+        background-color: #ff3838;
+        border-radius: 50%;
+        box-shadow: 0 0 15px #ff3838, 0 0 30px #ff3838;
+        z-index: 2;
+    }
+    .disaster-ripple {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 3px solid #ff3838;
+        border-radius: 50%;
+        animation: ripple 2s cubic-bezier(0.19, 1, 0.22, 1) infinite;
+        z-index: 1;
+        box-shadow: inset 0 0 10px rgba(255, 56, 56, 0.5);
     }
     
+    .disaster-predicted .disaster-core {
+        background-color: #ff9f1a;
+        box-shadow: 0 0 15px #ff9f1a, 0 0 30px #ff9f1a;
+    }
+    .disaster-predicted .disaster-ripple {
+        border-color: #ff9f1a;
+        box-shadow: inset 0 0 10px rgba(255, 159, 26, 0.5);
+    }
+
     @keyframes ripple {
-        0% { transform: scale(0.5); opacity: 1; }
-        100% { transform: scale(3); opacity: 0; }
+        0% { transform: scale(0.3); opacity: 1; }
+        100% { transform: scale(3.5); opacity: 0; }
     }
 
     /* Time-lapse Controls */
@@ -44,100 +68,134 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(10px);
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
         padding: 15px 30px;
         border-radius: 30px;
         display: flex;
         align-items: center;
         gap: 20px;
         z-index: 1000;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
         color: white;
         width: 80%;
         max-width: 600px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
     .timeline-control button {
-        background: #3b82f6;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
         border: none;
         color: white;
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: 0.3s;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        font-size: 1.1rem;
     }
     .timeline-control button:hover {
-        background: #2563eb;
-        transform: scale(1.05);
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
     }
     .timeline-slider {
         flex-grow: 1;
         -webkit-appearance: none;
-        height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 2px;
+        height: 6px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 3px;
         outline: none;
     }
     .timeline-slider::-webkit-slider-thumb {
         -webkit-appearance: none;
-        width: 16px;
-        height: 16px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background: #3b82f6;
         cursor: pointer;
         transition: 0.2s;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+    }
+    .timeline-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
     }
     .year-display {
-        font-size: 1.2rem;
-        font-weight: bold;
-        min-width: 60px;
+        font-size: 1.4rem;
+        font-weight: 800;
+        min-width: 70px;
         text-align: center;
-        color: #60a5fa;
+        color: #fff;
+        text-shadow: 0 2px 10px rgba(59, 130, 246, 0.8);
     }
     
     .legend {
         position: absolute;
         top: 20px;
         right: 20px;
-        background: rgba(15, 23, 42, 0.85);
-        padding: 15px;
-        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.9);
+        padding: 20px;
+        border-radius: 16px;
         z-index: 1000;
         color: white;
-        border: 1px solid rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
     .legend-item {
         display: flex;
         align-items: center;
-        margin-bottom: 8px;
-        font-size: 0.9rem;
+        margin-bottom: 12px;
+        font-size: 1rem;
+        font-weight: 500;
     }
+    .legend-item:last-child { margin-bottom: 0; }
     .legend-color {
-        width: 12px;
-        height: 12px;
+        width: 16px;
+        height: 16px;
         border-radius: 50%;
-        margin-right: 10px;
+        margin-right: 12px;
+    }
+    
+    /* Darken satellite map slightly for better marker contrast */
+    .leaflet-layer {
+        filter: brightness(0.8) contrast(1.2) saturate(1.1);
+    }
+    
+    /* Custom style for location names on the map */
+    .leaflet-tooltip.location-label {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #f8fafc;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        backdrop-filter: blur(5px);
+        border-radius: 6px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        padding: 4px 8px;
+    }
+    .leaflet-tooltip.location-label::before {
+        border-bottom-color: rgba(15, 23, 42, 0.85);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="glass-card animate-fade-in" style="padding: 0; overflow: hidden;">
+<div class="glass-card animate-fade-in" style="padding: 0; overflow: hidden; border: none;">
     <div class="map-container">
         <div id="map"></div>
         
         <div class="legend">
-            <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Disaster Type</div>
+            <div style="font-weight: 700; margin-bottom: 15px; font-size: 1.1rem; color: #e2e8f0;">Disaster Type</div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #ff4757; box-shadow: 0 0 10px #ff4757;"></div> Previous (Historical)
+                <div class="legend-color" style="background: #ff3838; box-shadow: 0 0 15px #ff3838;"></div> Previous (Historical)
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #ffa502; box-shadow: 0 0 10px #ffa502;"></div> Predicted (Future)
+                <div class="legend-color" style="background: #ff9f1a; box-shadow: 0 0 15px #ff9f1a;"></div> Predicted (Future)
             </div>
         </div>
 
@@ -157,32 +215,44 @@
     const map = L.map('map', {
         zoomControl: false,
         attributionControl: false
-    }).setView([20.5937, 78.9629], 5); // Center on India
+    }).setView([22.5937, 78.9629], 5); // Center on India
 
-    // Add dark modern tiles (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
+    // Add Esri World Imagery (Satellite) for a stunning realistic look
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19
     }).addTo(map);
     
     // Zoom control top left
     L.control.zoom({ position: 'topleft' }).addTo(map);
 
+    // Fix for map rendering inside animated/flex containers
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 500);
+
     // Generate mock disaster data for demonstration
-    // In production, this would be populated via Django context {{ disasters|safe }}
     const disasters = [];
-    const centerLat = 20.5937, centerLng = 78.9629;
+    const centerLat = 22.5937, centerLng = 78.9629;
+    const locations = [
+        "Mumbai", "Delhi", "Bengaluru", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad", "Surat", "Jaipur",
+        "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Patna", "Vadodara", "Ghaziabad",
+        "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad",
+        "Amritsar", "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur", "Gwalior", "Vijayawada", "Jodhpur",
+        "Madurai", "Raipur", "Kota", "Guwahati", "Chandigarh", "Mysore", "Bhubaneswar", "Thiruvananthapuram", "Dehradun"
+    ];
     
-    for(let i = 0; i < 150; i++) {
+    for(let i = 0; i < 200; i++) {
         const year = 2015 + Math.floor(Math.random() * 16); // 2015 to 2030
         const isPredicted = year > 2024;
+        const randomLocation = locations[Math.floor(Math.random() * locations.length)];
         
         disasters.push({
-            lat: centerLat + (Math.random() - 0.5) * 20,
-            lng: centerLng + (Math.random() - 0.5) * 20,
+            lat: centerLat + (Math.random() - 0.5) * 22,
+            lng: centerLng + (Math.random() - 0.5) * 25,
             year: year,
             type: isPredicted ? 'predicted' : 'historical',
-            intensity: Math.random() * 0.5 + 0.5
+            intensity: Math.random() * 0.6 + 0.4, // 0.4 to 1.0
+            location: randomLocation
         });
     }
 
@@ -196,12 +266,17 @@
     const yearDisplay = document.getElementById('yearDisplay');
     const playBtn = document.getElementById('playBtn');
 
-    // Create custom icon for animated ripple
+    // Create custom icon for animated glowing marker
     const createRippleIcon = (type, intensity) => {
-        const className = type === 'predicted' ? 'disaster-ripple disaster-predicted' : 'disaster-ripple';
-        const size = 20 * intensity;
+        const className = type === 'predicted' ? 'disaster-marker disaster-predicted' : 'disaster-marker';
+        const size = 60 * intensity; // Much larger pulsing ring
+        const coreSize = 16 * intensity; // Solid core size
+        
         return L.divIcon({
-            html: `<div class="${className}" style="width: ${size}px; height: ${size}px; margin-left: -${size/2}px; margin-top: -${size/2}px;"></div>`,
+            html: `<div class="${className}" style="width: ${size}px; height: ${size}px; margin-left: -${size/2}px; margin-top: -${size/2}px;">
+                       <div class="disaster-core" style="width: ${coreSize}px; height: ${coreSize}px;"></div>
+                       <div class="disaster-ripple"></div>
+                   </div>`,
             className: '',
             iconSize: [0, 0]
         });
@@ -221,11 +296,24 @@
                 icon: createRippleIcon(d.type, d.intensity)
             }).addTo(map);
             
+            // Add a permanent tooltip to show the location name directly on the map
+            marker.bindTooltip(`<strong>${d.location}</strong>`, {
+                permanent: true,
+                direction: 'bottom',
+                className: 'location-label',
+                offset: [0, 15]
+            });
+            
             marker.bindPopup(`
-                <div style="text-align:center; padding: 5px;">
-                    <strong>${d.type === 'predicted' ? 'Predicted Risk' : 'Historical Disaster'}</strong><br>
-                    Year: ${d.year}<br>
-                    Intensity: ${(d.intensity * 10).toFixed(1)}/10
+                <div style="text-align:center; padding: 10px; font-family: 'Inter', sans-serif;">
+                    <div style="font-size: 1.1rem; font-weight: bold; color: ${d.type === 'predicted' ? '#ff9f1a' : '#ff3838'}; margin-bottom: 5px;">
+                        ${d.type === 'predicted' ? '<i class="fa-solid fa-triangle-exclamation"></i> Predicted Risk' : '<i class="fa-solid fa-clock-rotate-left"></i> Historical Disaster'}
+                    </div>
+                    <div style="color: #333; font-size: 0.95rem;">
+                        <strong>Location:</strong> ${d.location}<br>
+                        <strong>Year:</strong> ${d.year}<br>
+                        <strong>Intensity:</strong> ${(d.intensity * 10).toFixed(1)} / 10
+                    </div>
                 </div>
             `);
             
@@ -246,7 +334,7 @@
             slider.value = currentYear;
             yearDisplay.innerText = currentYear;
             updateMapForYear(currentYear);
-        }, 1500); // Change year every 1.5 seconds
+        }, 1200); // slightly faster
     };
 
     const stopAnimation = () => {
