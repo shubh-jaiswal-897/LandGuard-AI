@@ -14,7 +14,7 @@ APScheduler==3.11.3
 beautifulsoup4==4.15.0
 pillow==12.3.0
 openai==3.8.0
-google-genai==2.22.0
+google-generativeai
 python-dateutil==2.9.0.post0
 PyPDF2==3.0.1
 python-docx==1.2.0
