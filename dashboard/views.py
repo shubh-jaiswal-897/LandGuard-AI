@@ -77,7 +77,7 @@ def sync_live_data(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
     try:
-        config = GovernmentAPIConfig.objects.filter(is_active=True, provider='GEMINI').first()
+        config = GovernmentAPIConfig.objects.filter(is_active=True, api_name='GEMINI').first()
         if not config or not config.api_key:
             return JsonResponse({'error': 'No active Gemini AI configuration found in Admin.'}, status=400)
 
@@ -169,7 +169,7 @@ def get_ai_resolution(request, alert_id):
     
     try:
         alert = Alert.objects.get(id=alert_id)
-        config = GovernmentAPIConfig.objects.filter(is_active=True, provider='GEMINI').first()
+        config = GovernmentAPIConfig.objects.filter(is_active=True, api_name='GEMINI').first()
         
         if not config or not config.api_key:
             return JsonResponse({'error': 'No active Gemini AI configuration found. Please add it in the Admin panel.'}, status=400)
@@ -218,7 +218,7 @@ def generate_global_recommendations(request):
     import json
     
     try:
-        config = GovernmentAPIConfig.objects.filter(is_active=True, provider='GEMINI').first()
+        config = GovernmentAPIConfig.objects.filter(is_active=True, api_name='GEMINI').first()
         if not config or not config.api_key:
             return JsonResponse({'error': 'No active Gemini AI configuration found.'}, status=400)
             
