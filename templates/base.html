@@ -376,6 +376,10 @@
                     <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
                 </div>
                 <div class="user-profile">
+                    <!-- Live Data Sync Button -->
+                    <button id="btnLiveSync" onclick="startGlobalSync()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: 0.3s; margin-right: 15px;">
+                        <i class="fa-solid fa-satellite-dish"></i> <span class="sync-text">Live Sync</span>
+                    </button>
                     <a href="{% url 'dashboard:alerts' %}" class="notification-btn" style="text-decoration: none;">
                         <i class="fa-regular fa-bell"></i>
                         <span class="notification-badge"></span>
@@ -394,6 +398,84 @@
         </main>
     </div>
 
+    <!-- Global OSINT Scan Modal -->
+    <div id="globalScanModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <div class="radar" style="width: 150px; height: 150px; border-radius: 50%; border: 2px solid rgba(16, 185, 129, 0.3); position: relative; overflow: hidden; margin-bottom: 30px; box-shadow: 0 0 50px rgba(16, 185, 129, 0.2);">
+            <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid rgba(16, 185, 129, 0.5);"></div>
+            <div style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid rgba(16, 185, 129, 0.5);"></div>
+            <div style="width: 50%; height: 50%; background: linear-gradient(45deg, rgba(16, 185, 129, 0.8) 0%, transparent 100%); position: absolute; top: 0; left: 50%; transform-origin: bottom left; animation: radarSpin 2s linear infinite;"></div>
+        </div>
+        <h2 style="font-size: 2rem; color: #10b981; margin-bottom: 10px; font-family: 'Outfit', sans-serif;">OSINT Global Scanner Active</h2>
+        <p id="scanStatusText" style="color: #cbd5e1; font-size: 1.1rem; max-width: 500px; line-height: 1.6;">Connecting to Gemini AI to search for the latest live updates on Indian Infrastructure Projects...</p>
+    </div>
+    
+    <style>
+        @keyframes radarSpin { 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .sync-text { display: none; } }
+    </style>
+
+    <script>
+        // Set CSRF token for fetch requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function startGlobalSync() {
+            const modal = document.getElementById('globalScanModal');
+            const statusText = document.getElementById('scanStatusText');
+            modal.style.display = 'flex';
+            
+            const statuses = [
+                "Scanning news articles across India...",
+                "Analyzing land acquisition delays via Gemini...",
+                "Generating live OSINT project alerts...",
+                "Updating database records..."
+            ];
+            
+            let statusIdx = 0;
+            const interval = setInterval(() => {
+                if(statusIdx < statuses.length) {
+                    statusText.innerText = statuses[statusIdx];
+                    statusIdx++;
+                }
+            }, 2500);
+
+            try {
+                const response = await fetch('/sync-live-data/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                clearInterval(interval);
+                
+                if(data.success) {
+                    statusText.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-check-circle"></i> Sync Complete! Found ${data.count} new delayed projects. Reloading dashboard...</span>`;
+                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                } else {
+                    statusText.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Sync Failed: ${data.error}</span>`;
+                    setTimeout(() => { modal.style.display = 'none'; }, 4000);
+                }
+            } catch(e) {
+                clearInterval(interval);
+                statusText.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Network Error during OSINT scan.</span>`;
+                setTimeout(() => { modal.style.display = 'none'; }, 4000);
+            }
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

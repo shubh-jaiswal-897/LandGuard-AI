@@ -13,4 +13,5 @@ urlpatterns = [
     path('run-ai-predictions/', views.run_ai_predictions, name='run_ai_predictions'),
     path('alerts/<int:alert_id>/ai-resolve/', views.get_ai_resolution, name='get_ai_resolution'),
     path('ai-recommendations/', views.generate_global_recommendations, name='generate_global_recommendations'),
+    path('sync-live-data/', views.sync_live_data, name='sync_live_data'),
 ]

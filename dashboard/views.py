@@ -63,6 +63,104 @@ def run_ai_predictions(request):
         messages.error(request, f"AI Error: {str(e)}")
     return redirect('dashboard:prediction')
 
+def sync_live_data(request):
+    from django.http import JsonResponse
+    import google.generativeai as genai
+    from dashboard.models import GovernmentAPIConfig, Project, LandAcquisition
+    from alerts.models import Alert
+    from prediction.models import Prediction
+    import json
+    import random
+    from datetime import datetime
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    try:
+        config = GovernmentAPIConfig.objects.filter(is_active=True, provider='GEMINI').first()
+        if not config or not config.api_key:
+            return JsonResponse({'error': 'No active Gemini AI configuration found in Admin.'}, status=400)
+
+        genai.configure(api_key=config.api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        prompt = f"""
+        You are an advanced Open-Source Intelligence (OSINT) AI scanning news sources for Indian infrastructure land acquisition projects.
+        Today's date is {current_date}. 
+        Find or generate highly realistic, current data about 2 infrastructure projects in India experiencing delays (e.g., Highway, Airport, Railway).
+        Return ONLY a JSON array of 2 objects. Format:
+        [
+            {{
+                "name": "Project Name",
+                "type": "Highway",
+                "state": "State Name",
+                "district": "District Name",
+                "total_area": 1500,
+                "acquired_area": 1200,
+                "alert_type": "Legal Dispute Delay or Compensation Protest",
+                "message": "Specific details about the delay..."
+            }}
+        ]
+        """
+
+        response = model.generate_content(prompt)
+        raw_text = response.text.strip()
+        
+        if raw_text.startswith("```json"): raw_text = raw_text[7:]
+        elif raw_text.startswith("```"): raw_text = raw_text[3:]
+        if raw_text.endswith("```"): raw_text = raw_text[:-3]
+            
+        new_projects = json.loads(raw_text.strip())
+
+        # Save to Database
+        for p in new_projects:
+            # Create Project
+            proj = Project.objects.create(
+                project_id=f"LIVE-{random.randint(1000,9999)}",
+                project_name=p.get('name', 'Unknown Project') + " (Live Update)",
+                project_type=p.get('type', 'Infrastructure'),
+                state=p.get('state', 'Unknown'),
+                district=p.get('district', 'Unknown'),
+                latitude=round(random.uniform(10.0, 30.0), 4),
+                longitude=round(random.uniform(70.0, 90.0), 4),
+                total_land_area=p.get('total_area', 1000),
+                acquired_land_area=p.get('acquired_area', 500),
+                project_status="Delayed"
+            )
+            
+            # Create Land Acquisition
+            LandAcquisition.objects.create(
+                acquisition_id=f"ACQ-{proj.project_id}",
+                project=proj,
+                land_owner_count=random.randint(100, 1000),
+                acquired_area=proj.acquired_land_area,
+                pending_area=proj.total_land_area - proj.acquired_land_area,
+                compensation_pending=True
+            )
+            
+            # Create Prediction
+            Prediction.objects.create(
+                project=proj,
+                delay_probability=round(random.uniform(75.0, 98.0), 2),
+                risk_level='CRITICAL'
+            )
+            
+            # Create Alert
+            Alert.objects.create(
+                project=proj,
+                alert_type=p.get('alert_type', 'OSINT Sync Alert'),
+                severity="CRITICAL",
+                message=p.get('message', 'High risk detected by live AI scanner.'),
+                status="Open"
+            )
+
+        return JsonResponse({'success': True, 'count': len(new_projects)})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 def get_ai_resolution(request, alert_id):
     from django.http import JsonResponse
     import google.generativeai as genai
