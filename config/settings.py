@@ -82,6 +82,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 import dj_database_url
+import shutil
 
 DATABASES = {
     'default': {
@@ -98,6 +99,19 @@ if database_url:
         conn_max_age=600,
         conn_health_checks=True,
     )
+elif os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_URL'):
+    # Vercel's root directory is read-only, but /tmp is writable
+    tmp_db_path = '/tmp/db.sqlite3'
+    source_db_path = os.path.join(BASE_DIR, 'db.sqlite3')
+    
+    # Copy the pre-populated database to /tmp if it hasn't been copied yet
+    if not os.path.exists(tmp_db_path) and os.path.exists(source_db_path):
+        try:
+            shutil.copy2(source_db_path, tmp_db_path)
+        except Exception:
+            pass
+            
+    DATABASES['default']['NAME'] = tmp_db_path
 
 
 # Password validation
@@ -137,6 +151,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Media files (Uploaded User Documents)
 MEDIA_URL = '/media/'

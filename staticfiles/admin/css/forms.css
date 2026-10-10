@@ -1,3 +1,5 @@
+@import url('widgets.css');
+
 /* FORM ROWS */
 
 .form-row {
@@ -7,8 +9,7 @@
     border-bottom: 1px solid var(--hairline-color);
 }
 
-.form-row img,
-.form-row input {
+.form-row img, .form-row input {
     vertical-align: middle;
 }
 
@@ -17,45 +18,31 @@
     vertical-align: 0;
 }
 
-.form-row select option:checked {
-    background-color: var(--selected-row);
-    color: var(--body-fg);
-}
-
 form .form-row p {
     padding-left: 0;
 }
 
 .flex-container {
     display: flex;
-    gap: 10px;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.flex-container div.checkbox {
-    display: flex;
 }
 
 .form-multiline {
     flex-wrap: wrap;
-    flex-direction: row;
+}
+
+.form-multiline > div {
+    padding-bottom: 10px;
 }
 
 /* FORM LABELS */
 
-legend,
 label {
     font-weight: normal;
     color: var(--body-quiet-color);
     font-size: 0.8125rem;
-    padding: 0;
 }
 
-.required legend,
-legend.required,
-.required label,
-label.required {
+.required label, label.required {
     font-weight: bold;
 }
 
@@ -70,8 +57,7 @@ form div.radiolist.inline div {
 }
 
 form div.radiolist label {
-    display: inline-block;
-    padding: 4px 10px 0 0;
+    width: auto;
 }
 
 form div.radiolist input[type="radio"] {
@@ -105,22 +91,21 @@ fieldset .inline-heading,
 
 /* ALIGNED FIELDSETS */
 
-.aligned fieldset {
-    border-top: none;
+.aligned label {
+    display: block;
+    padding: 4px 10px 0 0;
+    min-width: 160px;
+    width: 160px;
+    word-wrap: break-word;
 }
 
-.aligned fieldset > div {
-    width: 100%;
+.aligned label:not(.vCheckboxLabel):after {
+    content: '';
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.aligned legend {
-    float: inline-start;
-    padding: 0.5rem 0;
-}
-
-.aligned label + p,
-.aligned .checkbox-row + div.help,
-.aligned label + div.readonly {
+.aligned label + p, .aligned .checkbox-row + div.help, .aligned label + div.readonly {
     padding: 6px 0;
     margin-top: 0;
     margin-bottom: 0;
@@ -138,19 +123,34 @@ fieldset .inline-heading,
     margin-bottom: 0;
 }
 
-.colMS .aligned .vLargeTextField,
-.colMS .aligned .vXMLLargeTextField {
+.colMS .aligned .vLargeTextField, .colMS .aligned .vXMLLargeTextField {
     width: 350px;
 }
 
+form .aligned ul {
+    margin-left: 160px;
+    padding-left: 10px;
+}
+
 form .aligned div.radiolist {
-    display: block;
+    display: inline-block;
     margin: 0;
     padding: 0;
 }
 
-form .aligned fieldset div.help {
+form .aligned p.help,
+form .aligned div.help {
+    margin-top: 0;
+    margin-left: 160px;
+    padding-left: 10px;
+}
+
+form .aligned p.date div.help.timezonewarning,
+form .aligned p.datetime div.help.timezonewarning,
+form .aligned p.time div.help.timezonewarning {
     margin-left: 0;
+    padding-left: 0;
+    font-weight: normal;
 }
 
 form .aligned p.help:last-child,
@@ -159,13 +159,22 @@ form .aligned div.help:last-child {
     padding-bottom: 0;
 }
 
-form .aligned ul li {
-    list-style: none;
+form .aligned input + p.help,
+form .aligned textarea + p.help,
+form .aligned select + p.help,
+form .aligned input + div.help,
+form .aligned textarea + div.help,
+form .aligned select + div.help {
+    margin-left: 160px;
+    padding-left: 10px;
 }
 
-form .aligned div.help ul {
-    padding-left: 0;
-    margin-left: 0;
+form .aligned select option:checked {
+    background-color: var(--selected-row);
+}
+
+form .aligned ul li {
+    list-style: none;
 }
 
 form .aligned table p {
@@ -182,9 +191,33 @@ form .aligned table p {
     margin-top: -4px;
 }
 
-.colM .aligned .vLargeTextField,
-.colM .aligned .vXMLLargeTextField {
+.colM .aligned .vLargeTextField, .colM .aligned .vXMLLargeTextField {
     width: 610px;
+}
+
+fieldset .fieldBox {
+    margin-right: 20px;
+}
+
+/* WIDE FIELDSETS */
+
+.wide label {
+    width: 200px;
+}
+
+form .wide p.help,
+form .wide ul.errorlist,
+form .wide div.help {
+    padding-left: 50px;
+}
+
+form div.help ul {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.colM fieldset.wide .vLargeTextField, .colM fieldset.wide .vXMLLargeTextField {
+    width: 450px;
 }
 
 /* COLLAPSIBLE FIELDSETS */
@@ -228,8 +261,7 @@ body.popup .submit-row {
     line-height: 0.9375rem;
 }
 
-.submit-row input,
-.submit-row a {
+.submit-row input, .submit-row a {
     margin: 0;
 }
 
@@ -285,8 +317,7 @@ body.popup .submit-row {
     border: none;
 }
 
-.vDateField,
-.vTimeField {
+.vDateField, .vTimeField {
     margin-right: 2px;
     margin-bottom: 4px;
 }
@@ -303,12 +334,11 @@ body.popup .submit-row {
     width: 30em;
 }
 
-.vLargeTextField,
-.vXMLLargeTextField {
+.vLargeTextField, .vXMLLargeTextField {
     width: 48em;
 }
 
-.app-flatpages.model-flatpage #id_content {
+.flatpages-flatpage #id_content {
     height: 40.2em;
 }
 
@@ -328,8 +358,7 @@ body.popup .submit-row {
     width: 5em;
 }
 
-.vTextField,
-.vUUIDField {
+.vTextField, .vUUIDField {
     width: 20em;
 }
 
@@ -384,12 +413,9 @@ body.popup .submit-row {
     border: none;
 }
 
-.inline-related.tabular div.wrapper {
-    overflow-x: auto;
-}
-
 .inline-related.tabular fieldset.module table {
     width: 100%;
+    overflow-x: scroll;
 }
 
 .last-related fieldset {
@@ -403,6 +429,7 @@ body.popup .submit-row {
 .inline-group .tabular tr td.original {
     padding: 2px 0 0 0;
     width: 0;
+    _position: relative;
 }
 
 .inline-group .tabular th.original {
@@ -410,19 +437,16 @@ body.popup .submit-row {
     padding: 0;
 }
 
-.inline-group .tabular td {
-    font-size: 1rem;
-}
-
 .inline-group .tabular td.original p {
     position: absolute;
     left: 0;
-    height: 1.2em;
+    height: 1.1em;
     padding: 2px 9px;
     overflow: hidden;
-    font-size: 0.875rem;
+    font-size: 0.5625rem;
     font-weight: bold;
     color: var(--body-quiet-color);
+    _width: 700px;
 }
 
 .inline-group div.add-row,
@@ -467,14 +491,6 @@ form .related-widget-wrapper ul {
     display: inline-block;
     margin-left: 0;
     padding-left: 0;
-}
-
-form .related-widget-wrapper a.change-related img {
-    transform: scale(0.85);
-}
-
-form .related-widget-wrapper a.view-related img {
-    transform: scale(0.95);
 }
 
 .clearable-file-input input {

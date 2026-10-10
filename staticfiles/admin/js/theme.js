@@ -1,10 +1,8 @@
-"use strict";
+'use strict';
 {
     function setTheme(mode) {
         if (mode !== "light" && mode !== "dark" && mode !== "auto") {
-            console.error(
-                `Got invalid theme mode: ${mode}. Resetting to auto.`,
-            );
+            console.error(`Got invalid theme mode: ${mode}. Resetting to auto.`);
             mode = "auto";
         }
         document.documentElement.dataset.theme = mode;
@@ -13,9 +11,7 @@
 
     function cycleTheme() {
         const currentTheme = localStorage.getItem("theme") || "auto";
-        const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-        ).matches;
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
         if (prefersDark) {
             // Auto (dark) -> Light -> Dark
@@ -44,7 +40,7 @@
         currentTheme ? setTheme(currentTheme) : setTheme("auto");
     }
 
-    window.addEventListener("load", function (_) {
+    window.addEventListener('load', function(_) {
         const buttons = document.getElementsByClassName("theme-toggle");
         Array.from(buttons).forEach((btn) => {
             btn.addEventListener("click", cycleTheme);

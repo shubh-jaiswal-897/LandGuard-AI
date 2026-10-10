@@ -13,15 +13,13 @@
     width: 100%;
 }
 
-.selector-available,
-.selector-chosen {
+.selector-available, .selector-chosen {
     display: flex;
     flex-direction: column;
     flex: 1 1;
 }
 
-.selector-available-title,
-.selector-chosen-title {
+.selector-available-title, .selector-chosen-title {
     border: 1px solid var(--border-color);
     border-radius: 4px 4px 0 0;
 }
@@ -121,14 +119,11 @@
     height: 14em;
 }
 
-.selector
-    .selector-chosen:not(.selector-chosen--with-filtered)
-    .list-footer-display {
+.selector .selector-chosen:not(.selector-chosen--with-filtered) .list-footer-display {
     display: none;
 }
 
-.selector-add,
-.selector-remove {
+.selector-add, .selector-remove {
     width: 24px;
     height: 24px;
     display: block;
@@ -139,13 +134,11 @@
     border: none;
 }
 
-:enabled.selector-add,
-:enabled.selector-remove {
+:enabled.selector-add, :enabled.selector-remove {
     opacity: 1;
 }
 
-:enabled.selector-add:hover,
-:enabled.selector-remove:hover {
+:enabled.selector-add:hover, :enabled.selector-remove:hover {
     cursor: pointer;
 }
 
@@ -154,8 +147,7 @@
     background-size: 24px auto;
 }
 
-:enabled.selector-add:focus,
-:enabled.selector-add:hover {
+:enabled.selector-add:focus, :enabled.selector-add:hover {
     background-position: 0 -168px;
 }
 
@@ -164,50 +156,54 @@
     background-size: 24px auto;
 }
 
-:enabled.selector-remove:focus,
-:enabled.selector-remove:hover {
+:enabled.selector-remove:focus, :enabled.selector-remove:hover {
     background-position: 0 -120px;
 }
 
-.selector-chooseall,
-.selector-clearall {
+.selector-chooseall, .selector-clearall {
     display: inline-block;
+    height: 16px;
     text-align: left;
-    padding: 4px 5px;
     margin: 0 auto;
     overflow: hidden;
-    color: var(--button-fg);
-    background-color: var(--button-bg);
+    font-weight: bold;
+    line-height: 16px;
+    color: var(--body-quiet-color);
     text-decoration: none;
     opacity: 0.55;
     border: none;
-    border-radius: 4px;
 }
 
-:enabled.selector-chooseall:focus,
-:enabled.selector-clearall:focus,
-:enabled.selector-chooseall:hover,
-:enabled.selector-clearall:hover {
-    background-color: var(--button-hover-bg);
+:enabled.selector-chooseall:focus, :enabled.selector-clearall:focus,
+:enabled.selector-chooseall:hover, :enabled.selector-clearall:hover {
+    color: var(--link-fg);
 }
 
-:enabled.selector-chooseall,
-:enabled.selector-clearall {
+:enabled.selector-chooseall, :enabled.selector-clearall {
     opacity: 1;
 }
 
-:enabled.selector-chooseall:hover,
-:enabled.selector-clearall:hover {
+:enabled.selector-chooseall:hover, :enabled.selector-clearall:hover {
     cursor: pointer;
 }
 
-:enabled.selector-chooseall:focus,
-:enabled.selector-chooseall:hover {
+.selector-chooseall {
+    padding: 0 18px 0 0;
+    background: url(../img/selector-icons.svg) right -160px no-repeat;
+    cursor: default;
+}
+
+:enabled.selector-chooseall:focus, :enabled.selector-chooseall:hover {
     background-position: 100% -176px;
 }
 
-:enabled.selector-clearall:focus,
-:enabled.selector-clearall:hover {
+.selector-clearall {
+    padding: 0 0 0 18px;
+    background: url(../img/selector-icons.svg) 0 -128px no-repeat;
+    cursor: default;
+}
+
+:enabled.selector-clearall:focus, :enabled.selector-clearall:hover {
     background-position: 0 -144px;
 }
 
@@ -224,8 +220,7 @@
     height: 10.1em;
 }
 
-.stacked .selector-available,
-.stacked .selector-chosen {
+.stacked .selector-available, .stacked .selector-chosen {
     width: 480px;
 }
 
@@ -252,8 +247,7 @@
     padding: 3px 3px 3px 5px;
 }
 
-.stacked .selector-chooseall,
-.stacked .selector-clearall {
+.stacked .selector-chooseall, .stacked .selector-clearall {
     display: none;
 }
 
@@ -268,8 +262,7 @@
     cursor: pointer;
 }
 
-.stacked :enabled.selector-add:focus,
-.stacked :enabled.selector-add:hover {
+.stacked :enabled.selector-add:focus, .stacked :enabled.selector-add:hover {
     background-position: 0 -72px;
     cursor: pointer;
 }
@@ -285,8 +278,7 @@
     cursor: pointer;
 }
 
-.stacked :enabled.selector-remove:focus,
-.stacked :enabled.selector-remove:hover {
+.stacked :enabled.selector-remove:focus, .stacked :enabled.selector-remove:hover {
     background-position: 0 -24px;
     cursor: pointer;
 }
@@ -321,11 +313,6 @@ p.datetime {
     font-weight: bold;
 }
 
-p.datetime label {
-    display: block;
-    padding: 0.5rem 0;
-}
-
 .datetime span {
     white-space: nowrap;
     font-weight: normal;
@@ -333,9 +320,8 @@ p.datetime label {
     color: var(--body-quiet-color);
 }
 
-.datetime input,
-.form-row .datetime input.vDateField,
-.form-row .datetime input.vTimeField {
+.datetime input, .form-row .datetime input.vDateField, .form-row .datetime input.vTimeField {
+    margin-left: 5px;
     margin-bottom: 4px;
 }
 
@@ -345,15 +331,7 @@ table p.datetime {
     padding-left: 0;
 }
 
-.datetimeshortcuts button {
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-}
-
-.datetimeshortcuts .clock-icon,
-.datetimeshortcuts .date-icon {
+.datetimeshortcuts .clock-icon, .datetimeshortcuts .date-icon {
     position: relative;
     display: inline-block;
     vertical-align: middle;
@@ -367,8 +345,8 @@ table p.datetime {
     background-size: 24px auto;
 }
 
-.datetimeshortcuts button:focus .clock-icon,
-.datetimeshortcuts button:hover .clock-icon {
+.datetimeshortcuts a:focus .clock-icon,
+.datetimeshortcuts a:hover .clock-icon {
     background-position: 0 -24px;
 }
 
@@ -378,8 +356,8 @@ table p.datetime {
     top: -1px;
 }
 
-.datetimeshortcuts button:focus .date-icon,
-.datetimeshortcuts button:hover .date-icon {
+.datetimeshortcuts a:focus .date-icon,
+.datetimeshortcuts a:hover .date-icon {
     background-position: 0 -24px;
 }
 
@@ -431,10 +409,8 @@ span.clearable-file-input label {
 
 /* CALENDARS & CLOCKS */
 
-.calendarbox,
-.clockbox {
-    margin: 0;
-    padding: 0;
+.calendarbox, .clockbox {
+    margin: 5px auto;
     font-size: 0.75rem;
     width: 19em;
     text-align: center;
@@ -444,12 +420,11 @@ span.clearable-file-input label {
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     overflow: hidden;
-    position: absolute;
+    position: relative;
 }
 
-.calendarbox::backdrop,
-.clockbox::backdrop {
-    background: rgba(0, 0, 0, 0.75);
+.clockbox {
+    width: auto;
 }
 
 .calendar {
@@ -465,8 +440,7 @@ span.clearable-file-input label {
     width: 100%;
 }
 
-.calendar caption,
-.calendarbox h2 {
+.calendar caption, .calendarbox h2 {
     margin: 0;
     text-align: center;
     border-top: none;
@@ -508,8 +482,7 @@ span.clearable-file-input label {
     font-weight: 700;
 }
 
-.calendar td a,
-.timelist a {
+.calendar td a, .timelist a {
     display: block;
     font-weight: 400;
     padding: 6px;
@@ -517,16 +490,13 @@ span.clearable-file-input label {
     color: var(--body-quiet-color);
 }
 
-.calendar td a:focus,
-.timelist a:focus,
-.calendar td a:hover,
-.timelist a:hover {
+.calendar td a:focus, .timelist a:focus,
+.calendar td a:hover, .timelist a:hover {
     background: var(--primary);
     color: white;
 }
 
-.calendar td a:active,
-.timelist a:active {
+.calendar td a:active, .timelist a:active {
     background: var(--header-bg);
     color: white;
 }
@@ -539,10 +509,8 @@ span.clearable-file-input label {
     padding: 1px 3px;
 }
 
-.calendarnav a:link,
-#calendarnav a:visited,
-#calendarnav a:focus,
-#calendarnav a:hover {
+.calendarnav a:link, #calendarnav a:visited,
+#calendarnav a:focus, #calendarnav a:hover {
     color: var(--body-quiet-color);
 }
 
@@ -555,8 +523,7 @@ span.clearable-file-input label {
     padding: 8px 0;
 }
 
-.calendarbox .calendarnav-previous,
-.calendarbox .calendarnav-next {
+.calendarbox .calendarnav-previous, .calendarbox .calendarnav-next {
     display: block;
     position: absolute;
     top: 8px;
@@ -585,8 +552,7 @@ span.clearable-file-input label {
     color: var(--button-fg);
 }
 
-.calendar-cancel:focus,
-.calendar-cancel:hover {
+.calendar-cancel:focus, .calendar-cancel:hover {
     background: var(--close-button-hover-bg);
 }
 
@@ -595,8 +561,7 @@ span.clearable-file-input label {
     display: block;
 }
 
-ul.timelist,
-.timelist li {
+ul.timelist, .timelist li {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -611,16 +576,14 @@ ul.timelist,
 .inline-deletelink {
     float: right;
     text-indent: -9999px;
-    background: url(../img/inline-delete.svg) center center no-repeat;
-    background-size: contain;
+    background: url(../img/inline-delete.svg) 0 0 no-repeat;
     width: 1.5rem;
     height: 1.5rem;
     border: 0px none;
-    margin-bottom: 0.25rem;
+    margin-bottom: .25rem;
 }
 
-.inline-deletelink:focus,
-.inline-deletelink:hover {
+.inline-deletelink:focus, .inline-deletelink:hover {
     cursor: pointer;
 }
 
@@ -633,12 +596,8 @@ ul.timelist,
     margin-bottom: 5px;
 }
 
-.related-widget-wrapper:has(select:not([multiple])) {
-    align-items: center;
-}
-
 .related-widget-wrapper-link {
-    opacity: 0.6;
+    opacity: .6;
     filter: grayscale(1);
 }
 
