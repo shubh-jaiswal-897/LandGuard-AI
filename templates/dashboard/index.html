@@ -760,21 +760,14 @@
         }
     });
 
-    // Initialize Mini Hero Map - Full India Centered View (Zero Cut off)
+    // Initialize Mini Hero Map - Identical Setup to GIS Map Page
     const heroMapElement = document.getElementById('heroMap');
-    const indiaBounds = L.latLngBounds([[6.5, 68.0], [35.5, 97.0]]);
-    
-    const map = L.map('heroMap', { 
-        zoomControl: false, 
-        attributionControl: false,
-        minZoom: 3,
-        maxZoom: 18
-    }).setView([21.5, 80.0], 4);
+    const indiaBounds = L.latLngBounds([[7.0, 67.5], [35.5, 96.5]]);
+    const map = L.map('heroMap', { zoomControl: false, attributionControl: false });
     
     const primaryTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-        noWrap: true,
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
@@ -782,21 +775,26 @@
         tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
     });
 
-    const fitIndiaInView = () => {
+    map.fitBounds(indiaBounds, { padding: [10, 10] });
+
+    const invalidateHeroMap = () => {
         if (map) { 
             map.invalidateSize(true);
-            map.fitBounds(indiaBounds, { padding: [10, 10], maxZoom: 4.8 });
+            map.fitBounds(indiaBounds, { padding: [10, 10] });
         }
     };
 
-    window.addEventListener('load', fitIndiaInView);
-    window.addEventListener('resize', fitIndiaInView);
-    setTimeout(fitIndiaInView, 150);
-    setTimeout(fitIndiaInView, 500);
+    window.addEventListener('load', invalidateHeroMap);
+    window.addEventListener('resize', invalidateHeroMap);
+    setTimeout(invalidateHeroMap, 100);
+    setTimeout(invalidateHeroMap, 300);
+    setTimeout(invalidateHeroMap, 800);
 
     if (window.ResizeObserver && heroMapElement) {
-        new ResizeObserver(() => fitIndiaInView()).observe(heroMapElement);
+        new ResizeObserver(() => invalidateHeroMap()).observe(heroMapElement);
     }
+
+    L.control.zoom({ position: 'topleft' }).addTo(map);
 
     const projectsData = {{ projects_map_json|safe }};
     
