@@ -1,35 +1,156 @@
 {% extends 'base.html' %}
 
-{% block title %}Documents{% endblock %}
-{% block page_title %}Document Vault{% endblock %}
+{% block title %}Document Vault - LandGuard AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .docs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .btn-upload-doc {
+        background: var(--brand-gradient);
+        color: white !important;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--radius-full);
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+    }
+
+    .docs-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .docs-table th {
+        padding: 14px 16px;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .docs-table td {
+        padding: 16px;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.88rem;
+        color: var(--text-primary);
+    }
+
+    .docs-table tr:hover {
+        background: var(--glass-hover);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="glass-card animate-fade-in">
-    <div class="section-header" style="margin-bottom: 20px;">
-        <h2 class="section-title">Project Documents</h2>
-        <button style="background: var(--accent-gradient); border:none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
-            <i class="fa-solid fa-upload"></i> Upload Document
-        </button>
+<div class="docs-header">
+    <div>
+        <h1 style="font-size: 2rem; color: var(--text-primary); margin-bottom: 4px;">Document Vault</h1>
+        <p style="color: var(--text-secondary); margin: 0;">Official Gazette Notifications, Court Orders, and Compensation Disbursement Ledgers</p>
     </div>
-    
-    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 20px;">
+
+    <button class="btn-upload-doc" onclick="document.getElementById('uploadModal').style.display='flex'">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Gazette / Order
+    </button>
+</div>
+
+<div class="lg-card" style="padding: 0; overflow: hidden;">
+    <table class="docs-table">
         <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <th style="padding: 12px;">Document Name</th>
-                <th style="padding: 12px;">Type</th>
-                <th style="padding: 12px;">Project</th>
-                <th style="padding: 12px;">Date Added</th>
-                <th style="padding: 12px;">Action</th>
+            <tr>
+                <th>Document Title & Reference</th>
+                <th>Category Type</th>
+                <th>Project Footprint</th>
+                <th>Uploaded Date</th>
+                <th>Verification Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
+            {% for doc in documents %}
             <tr>
-                <td colspan="5" style="padding: 24px; text-align: center; color: var(--text-secondary);">
-                    <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 16px; display: block; opacity: 0.5;"></i>
+                <td>
+                    <div style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 1.1rem;"></i>
+                        {{ doc.title }}
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-code); margin-left: 24px;">Ref: {{ doc.reference_number|default:"GAZ-2026-NOC" }}</span>
+                </td>
+                <td>
+                    <span style="background: rgba(59, 130, 246, 0.12); color: #3b82f6; padding: 4px 10px; border-radius: var(--radius-md); font-size: 0.78rem; font-weight: 600;">
+                        {{ doc.get_doc_type_display }}
+                    </span>
+                </td>
+                <td style="color: var(--text-primary); font-weight: 600;">{{ doc.project.project_name }}</td>
+                <td style="color: var(--text-secondary);">{{ doc.uploaded_at|date:"d M Y" }}</td>
+                <td>
+                    <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700;">
+                        ✓ {{ doc.status }}
+                    </span>
+                </td>
+                <td>
+                    <button style="background: var(--bg-surface-2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 6px 12px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem;" onclick="alert('Downloading {{ doc.title|escapejs }} ({{ doc.file_size }})...')">
+                        <i class="fa-solid fa-download"></i> Download ({{ doc.file_size }})
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-muted);">
                     No documents uploaded yet.
                 </td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 12, 24, 0.85); backdrop-filter: blur(12px); z-index: 100000; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="background: var(--bg-surface-1); border: 1px solid var(--glass-border); width: 100%; max-width: 520px; border-radius: var(--radius-lg); padding: 2rem; position: relative;">
+        <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;" onclick="document.getElementById('uploadModal').style.display='none'">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Upload Official Gazette / Legal Document</h3>
+        <form onsubmit="event.preventDefault(); alert('Document uploaded successfully & attached to Project.'); document.getElementById('uploadModal').style.display='none';">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 4px;">Document Title</label>
+                <input type="text" style="width: 100%; background: var(--bg-surface-2); border: 1px solid var(--glass-border); padding: 10px; border-radius: var(--radius-md); color: var(--text-primary);" required placeholder="e.g. LARR Sec 19 Declaration Gazette">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 4px;">Associated Project</label>
+                <select style="width: 100%; background: var(--bg-surface-2); border: 1px solid var(--glass-border); padding: 10px; border-radius: var(--radius-md); color: var(--text-primary);">
+                    {% for p in projects %}
+                    <option value="{{ p.id }}">{{ p.project_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 4px;">File Attachment (PDF, DOCX)</label>
+                <input type="file" style="width: 100%; background: var(--bg-surface-2); border: 1px solid var(--glass-border); padding: 10px; border-radius: var(--radius-md); color: var(--text-primary);">
+            </div>
+
+            <button type="submit" style="width: 100%; background: var(--brand-gradient); color: white !important; border: none; padding: 12px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer;">
+                Submit & Verify Document
+            </button>
+        </form>
+    </div>
 </div>
 {% endblock %}

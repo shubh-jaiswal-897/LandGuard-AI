@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Official Intelligence Reports - LandGuard AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-layout {
+        display: grid;
+        grid-template-columns: 4fr 8fr;
+        gap: 24px;
+    }
+
+    .report-options-card {
+        background: var(--glass-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+    }
+
+    .preview-card {
+        background: white;
+        color: #0f172a;
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        min-height: 680px;
+        position: relative;
+    }
+
+    .form-group-lg {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label-lg {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .form-control-lg {
+        width: 100%;
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        padding: 10px 14px;
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .btn-export-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 1.5rem;
+    }
+
+    .btn-exp {
+        flex: 1;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        transition: var(--transition-smooth);
+    }
+
+    .btn-pdf { background: #ef4444; color: white; }
+    .btn-excel { background: #10b981; color: white; }
+    .btn-print { background: #3b82f6; color: white; }
+
+    @media print {
+        body * { visibility: hidden; }
+        .preview-card, .preview-card * { visibility: visible; }
+        .preview-card { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; color: white; margin-bottom: 4px;">Generate Intelligence Report</h1>
+    <p style="color: var(--text-secondary); margin: 0;">Official Government brief generation for Ministry Officials and District Collectors</p>
+</div>
+
+<div class="reports-layout">
+    <!-- Left Configuration Panel -->
+    <div class="report-options-card">
+        <h3 style="font-size: 1.15rem; color: white; margin-bottom: 1.25rem;">Report Configuration</h3>
+
+        <div class="form-group-lg">
+            <label class="form-label-lg">Select Report Type</label>
+            <select class="form-control-lg" id="reportTypeSelect" onchange="updatePreview()">
+                <option value="SUMMARY">Project Risk & Delay Summary</option>
+                <option value="CRITICAL">High-Risk & Critical Alert Briefing</option>
+                <option value="STATE">State-Wise Land Acquisition Audit</option>
+                <option value="MONTHLY">Monthly Ministry Performance Report</option>
+            </select>
+        </div>
+
+        <div class="form-group-lg">
+            <label class="form-label-lg">Target Region / State</label>
+            <select class="form-control-lg" id="stateSelect" onchange="updatePreview()">
+                <option value="ALL">All India (National Footprint)</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+            </select>
+        </div>
+
+        <div class="form-group-lg">
+            <label class="form-label-lg">Include Classification Sections</label>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">
+                <label><input type="checkbox" checked id="chkXai"> Include Explainable AI (XAI) Attribution</label>
+                <label><input type="checkbox" checked id="chkAlerts"> Include Open High Court Disputes & Alerts</label>
+                <label><input type="checkbox" checked id="chkRecs"> Include Strategic Action Recommendations</label>
+            </div>
+        </div>
+
+        <div class="btn-export-group">
+            <button class="btn-exp btn-pdf" onclick="window.print()">
+                <i class="fa-solid fa-file-pdf"></i> Generate PDF
+            </button>
+            <button class="btn-exp btn-excel" onclick="alert('Exported report data to Excel (.XLSX) format.')">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+            </button>
+            <button class="btn-exp btn-print" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Live Preview Pane -->
+    <div class="preview-card" id="printableReport">
+        <!-- Official Government Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <div style="font-weight: 800; font-size: 1.25rem; letter-spacing: 0.05em; color: #1e3a8a;">GOVERNMENT OF INDIA</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: #334155;">MINISTRY OF ROAD TRANSPORT & HIGHWAYS / INFRASTRUCTURE</div>
+                <div style="font-size: 0.8rem; color: #64748b;">LandGuard AI - Early Risk Intelligence System</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">DATE: {{ today_date }}</div>
+                <div style="font-size: 0.75rem; color: #64748b;">REF: LG-RPT-2026-CONF</div>
+                <span style="display: inline-block; background: #dcfce7; color: #166534; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 4px;">OFFICIAL BRIEF</span>
+            </div>
+        </div>
+
+        <h2 style="font-size: 1.4rem; color: #0f172a; text-align: center; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 0.05em;" id="reportTitle">
+            National Infrastructure Land Acquisition Risk Summary Report
+        </h2>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 1.5rem; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <div>
+                <span style="font-size: 0.75rem; color: #64748b;">TOTAL PROJECTS ANALYZED</span>
+                <div style="font-size: 1.3rem; font-weight: 800; color: #0f172a;">{{ projects.count }} Projects</div>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: #64748b;">ACQUIRED LAND FOOTPRINT</span>
+                <div style="font-size: 1.3rem; font-weight: 800; color: #16a34a;">{{ acquired_area }} / {{ total_area }} ha</div>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: #64748b;">HIGH-RISK BOTTLENECKS</span>
+                <div style="font-size: 1.3rem; font-weight: 800; color: #dc2626;">{{ high_risk_projects.count }} Critical Parcels</div>
+            </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.85rem;">
+            <thead>
+                <tr style="background: #1e293b; color: white;">
+                    <th style="padding: 10px; text-align: left;">Project Name</th>
+                    <th style="padding: 10px; text-align: left;">State / District</th>
+                    <th style="padding: 10px; text-align: left;">Progress</th>
+                    <th style="padding: 10px; text-align: left;">Risk Level</th>
+                    <th style="padding: 10px; text-align: left;">Delay Prob</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in projects %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px; font-weight: 700;">{{ p.project_name }}</td>
+                    <td style="padding: 10px;">{{ p.district }}, {{ p.state }}</td>
+                    <td style="padding: 10px;">{{ p.acquired_land_area }}/{{ p.total_land_area }} ha</td>
+                    <td style="padding: 10px; font-weight: 700; color: {% if p.prediction.risk_level == 'CRITICAL' or p.prediction.risk_level == 'HIGH' %}#dc2626{% else %}#16a34a{% endif %};">
+                        {{ p.prediction.risk_level|default:"MEDIUM" }}
+                    </td>
+                    <td style="padding: 10px; font-weight: 700;">{{ p.prediction.delay_probability|default:"50.0" }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="border-top: 1px solid #cbd5e1; padding-top: 1rem; margin-top: 2rem; display: flex; justify-content: space-between; font-size: 0.78rem; color: #64748b;">
+            <span>Generated via LandGuard AI Platform</span>
+            <span>Signature: ______________________ (Nodal Officer)</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updatePreview() {
+        const type = document.getElementById('reportTypeSelect').value;
+        const titleMap = {
+            'SUMMARY': 'National Infrastructure Land Acquisition Risk Summary Report',
+            'CRITICAL': 'High-Risk Bottleneck & Critical Alert Executive Briefing',
+            'STATE': 'State-Wise Cadastral & Land Acquisition Audit',
+            'MONTHLY': 'Monthly Ministry Infrastructure Performance Audit'
+        };
+        document.getElementById('reportTitle').innerText = titleMap[type] || 'Land Acquisition Report';
+    }
+</script>
+{% endblock %}

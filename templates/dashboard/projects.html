@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects Registry - LandGuard AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .projects-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        padding: 10px 16px;
+        border-radius: var(--radius-lg);
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        background: var(--bg-surface-2);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        padding: 8px 14px;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        outline: none;
+    }
+
+    .btn-action-primary {
+        background: linear-gradient(135deg, var(--brand-accent), #2563eb);
+        color: #ffffff !important;
+        border: none;
+        padding: 10px 18px;
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-primary:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+    }
+
+    .projects-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .projects-table th {
+        padding: 14px 16px;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .projects-table td {
+        padding: 16px;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+
+    .projects-table tr:hover {
+        background: var(--glass-hover);
+    }
+
+    .risk-tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        text-transform: uppercase;
+    }
+
+    .tag-critical, .tag-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .tag-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tag-low { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        padding: 1rem;
+    }
+
+    .modal-box {
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 560px;
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .form-group-full {
+        grid-column: span 2;
+    }
+
+    .modal-input {
+        width: 100%;
+        background: var(--bg-surface-2);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="projects-header">
+    <div>
+        <h1 style="font-size: 2rem; color: var(--text-primary); margin-bottom: 4px;">Infrastructure Projects Registry</h1>
+        <p style="color: var(--text-secondary); margin: 0;">Comprehensive repository of active land acquisition footprints across Indian states.</p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div class="filter-bar">
+            <i class="fa-solid fa-filter" style="color: var(--brand-accent);"></i>
+            <select class="filter-select" id="stateFilter" onchange="filterProjects()">
+                <option value="ALL">All States</option>
+                {% for st in states %}
+                <option value="{{ st }}">{{ st }}</option>
+                {% endfor %}
+            </select>
+
+            <select class="filter-select" id="typeFilter" onchange="filterProjects()">
+                <option value="ALL">All Project Types</option>
+                {% for t in project_types %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+
+            <select class="filter-select" id="riskFilter" onchange="filterProjects()">
+                <option value="ALL">All Risk Levels</option>
+                <option value="CRITICAL">Critical Risk</option>
+                <option value="HIGH">High Risk</option>
+                <option value="MEDIUM">Medium Risk</option>
+                <option value="LOW">Low Risk</option>
+            </select>
+        </div>
+
+        <button class="btn-action-primary" onclick="openAddProjectModal()">
+            <i class="fa-solid fa-plus"></i> Add New Project
+        </button>
+    </div>
+</div>
+
+<div class="lg-card" style="padding: 0; overflow-x: auto;">
+    <table class="projects-table" id="projectsTable">
+        <thead>
+            <tr>
+                <th>Project ID & Name</th>
+                <th>State & District</th>
+                <th>Type</th>
+                <th>Land Progress</th>
+                <th>Delay Risk Level</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+            {% with pred=p.prediction %}
+            <tr data-state="{{ p.state }}" data-type="{{ p.project_type }}" data-risk="{{ pred.risk_level|default:'MEDIUM' }}">
+                <td>
+                    <div style="font-weight: 700; color: var(--text-primary);">{{ p.project_name }}</div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-code);">ID: {{ p.project_id }}</span>
+                </td>
+                <td>
+                    <div style="color: var(--text-primary);">{{ p.district }}</div>
+                    <span style="font-size: 0.78rem; color: var(--text-secondary);">{{ p.state }}</span>
+                </td>
+                <td>
+                    <span style="background: rgba(59, 130, 246, 0.12); color: #3b82f6; padding: 4px 10px; border-radius: var(--radius-md); font-size: 0.78rem; font-weight: 600;">
+                        {{ p.project_type }}
+                    </span>
+                </td>
+                <td>
+                    <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">
+                        {{ p.acquired_land_area }} / {{ p.total_land_area }} ha
+                    </div>
+                    <div style="width: 140px; height: 6px; background: var(--bg-surface-3); border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                        <div style="width: calc({{ p.acquired_land_area }} / {{ p.total_land_area }} * 100%); background: var(--brand-accent); height: 100%;"></div>
+                    </div>
+                </td>
+                <td>
+                    <span class="risk-tag {% if pred.risk_level == 'CRITICAL' or pred.risk_level == 'HIGH' %}tag-high{% elif pred.risk_level == 'MEDIUM' %}tag-medium{% else %}tag-low{% endif %}">
+                        {{ pred.risk_level|default:"MEDIUM" }} ({{ pred.delay_probability|default:"50.0" }}%)
+                    </span>
+                </td>
+                <td>
+                    <span style="font-weight: 600; color: {% if p.project_status == 'Delayed' %}#ef4444{% elif p.project_status == 'Completed' %}#10b981{% else %}#06b6d4{% endif %};">
+                        {{ p.project_status }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 6px;">
+                        <button style="background: var(--bg-surface-2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 6px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem; font-weight: 600;" onclick="openProjectModal('{{ p.project_id }}')" title="Analyze Risk">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        </button>
+
+                        <button style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; padding: 6px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem; font-weight: 600;" onclick="openEditProjectModal('{{ p.project_id }}', '{{ p.project_name|escapejs }}', '{{ p.project_type|escapejs }}', '{{ p.state|escapejs }}', '{{ p.district|escapejs }}', '{{ p.total_land_area }}', '{{ p.acquired_land_area }}', '{{ p.project_status }}')" title="Edit Project">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+
+                        <form method="POST" action="{% url 'dashboard:project_delete' p.project_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete project {{ p.project_name }}?');">
+                            {% csrf_token %}
+                            <button type="submit" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem; font-weight: 600;" title="Delete Project">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Project Modal -->
+<div class="modal-overlay" id="addProjectModal">
+    <div class="modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0; color: var(--text-primary); font-size: 1.3rem;"><i class="fa-solid fa-plus-circle" style="color: var(--brand-accent);"></i> Add New Infrastructure Project</h3>
+            <button onclick="closeAddProjectModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form method="POST" action="{% url 'dashboard:project_create' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Project ID</label>
+                    <input type="text" name="project_id" class="modal-input" placeholder="e.g. NHAI-UP-2026" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Project Name</label>
+                    <input type="text" name="project_name" class="modal-input" placeholder="e.g. Kanpur Expressway" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Project Type</label>
+                    <select name="project_type" class="modal-input" required>
+                        <option value="Highway">Highway</option>
+                        <option value="Railway">Railway</option>
+                        <option value="Airport">Airport</option>
+                        <option value="Urban Rail">Urban Rail / Metro</option>
+                        <option value="Water">Water / Irrigation</option>
+                        <option value="Power">Power / Solar</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">State</label>
+                    <input type="text" name="state" class="modal-input" placeholder="e.g. Uttar Pradesh" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">District</label>
+                    <input type="text" name="district" class="modal-input" placeholder="e.g. Kanpur Nagar" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Status</label>
+                    <select name="project_status" class="modal-input">
+                        <option value="Planning">Planning</option>
+                        <option value="Active">Active</option>
+                        <option value="Delayed">Delayed</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Total Target Area (ha)</label>
+                    <input type="number" step="0.01" name="total_land_area" class="modal-input" placeholder="1000.0" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Acquired Area (ha)</label>
+                    <input type="number" step="0.01" name="acquired_land_area" class="modal-input" placeholder="250.0" required>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem;">
+                <button type="button" onclick="closeAddProjectModal()" style="background: var(--bg-surface-2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 10px 18px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Cancel</button>
+                <button type="submit" class="btn-action-primary">Create & Run AI Analysis</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Project Modal -->
+<div class="modal-overlay" id="editProjectModal">
+    <div class="modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0; color: var(--text-primary); font-size: 1.3rem;"><i class="fa-solid fa-pen-to-square" style="color: var(--brand-accent);"></i> Edit Infrastructure Project</h3>
+            <button onclick="closeEditProjectModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="editProjectForm" method="POST" action="">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Project Name</label>
+                    <input type="text" id="edit_name" name="project_name" class="modal-input" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Project Type</label>
+                    <input type="text" id="edit_type" name="project_type" class="modal-input" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">State</label>
+                    <input type="text" id="edit_state" name="state" class="modal-input" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">District</label>
+                    <input type="text" id="edit_district" name="district" class="modal-input" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Total Target Area (ha)</label>
+                    <input type="number" step="0.01" id="edit_total" name="total_land_area" class="modal-input" required>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Acquired Area (ha)</label>
+                    <input type="number" step="0.01" id="edit_acquired" name="acquired_land_area" class="modal-input" required>
+                </div>
+                <div class="form-group-full">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Project Status</label>
+                    <select id="edit_status" name="project_status" class="modal-input">
+                        <option value="Planning">Planning</option>
+                        <option value="Active">Active</option>
+                        <option value="Delayed">Delayed</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem;">
+                <button type="button" onclick="closeEditProjectModal()" style="background: var(--bg-surface-2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 10px 18px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Cancel</button>
+                <button type="submit" class="btn-action-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function filterProjects() {
+        const state = document.getElementById('stateFilter').value;
+        const type = document.getElementById('typeFilter').value;
+        const risk = document.getElementById('riskFilter').value;
+
+        const rows = document.querySelectorAll('#projectsTable tbody tr');
+        rows.forEach(row => {
+            const rowState = row.getAttribute('data-state');
+            const rowType = row.getAttribute('data-type');
+            const rowRisk = row.getAttribute('data-risk');
+
+            const stateMatch = (state === 'ALL' || rowState === state);
+            const typeMatch = (type === 'ALL' || rowType === type);
+            const riskMatch = (risk === 'ALL' || rowRisk === risk);
+
+            if(stateMatch && typeMatch && riskMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function openAddProjectModal() {
+        document.getElementById('addProjectModal').style.display = 'flex';
+    }
+
+    function closeAddProjectModal() {
+        document.getElementById('addProjectModal').style.display = 'none';
+    }
+
+    function openEditProjectModal(id, name, type, state, district, total, acquired, status) {
+        document.getElementById('editProjectForm').action = `/projects/${id}/edit/`;
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_type').value = type;
+        document.getElementById('edit_state').value = state;
+        document.getElementById('edit_district').value = district;
+        document.getElementById('edit_total').value = total;
+        document.getElementById('edit_acquired').value = acquired;
+        document.getElementById('edit_status').value = status;
+        document.getElementById('editProjectModal').style.display = 'flex';
+    }
+
+    function closeEditProjectModal() {
+        document.getElementById('editProjectModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

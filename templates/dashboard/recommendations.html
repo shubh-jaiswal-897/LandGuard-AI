@@ -1,199 +1,161 @@
 {% extends 'base.html' %}
 
-{% block title %}Recommendations{% endblock %}
-{% block page_title %}AI Recommendations{% endblock %}
+{% block title %}Strategic AI Advisory - LandGuard AI{% endblock %}
 
 {% block extra_css %}
 <style>
-    .rec-card {
-        padding: 24px;
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-        transition: transform 0.3s, box-shadow 0.3s;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    .rec-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    /* Theme variants */
-    .rec-card.theme-blue {
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-    .rec-card.theme-blue:hover { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2); }
-    .rec-card.theme-blue i { color: #3b82f6; }
-    .rec-card.theme-blue button { background: #3b82f6; }
-    
-    .rec-card.theme-green {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .rec-card.theme-green:hover { box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); }
-    .rec-card.theme-green i { color: #10b981; }
-    .rec-card.theme-green button { background: #10b981; }
-    
-    .rec-card.theme-purple {
-        background: rgba(139, 92, 246, 0.1);
-        border: 1px solid rgba(139, 92, 246, 0.3);
-    }
-    .rec-card.theme-purple:hover { box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2); }
-    .rec-card.theme-purple i { color: #8b5cf6; }
-    .rec-card.theme-purple button { background: #8b5cf6; }
-    
-    .btn-generate {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 1.1rem;
-        cursor: pointer;
-        transition: 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-    }
-    .btn-generate:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
-    }
-    .btn-generate:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    /* Loading state */
-    .ai-loading-state {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 50px 0;
-        gap: 20px;
-    }
-    .scanner {
-        width: 100px;
-        height: 100px;
-        border: 4px solid rgba(245, 158, 11, 0.2);
-        border-top-color: #f59e0b;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    
     .rec-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        margin-bottom: 30px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-    @media (max-width: 768px) {
-        .rec-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 20px;
-        }
-        .btn-generate { width: 100%; justify-content: center; }
+
+    .btn-generate-ai {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white !important;
+        border: none;
+        padding: 12px 24px;
+        border-radius: var(--radius-full);
+        font-family: var(--font-display);
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
+        transition: var(--transition-smooth);
     }
+
+    .btn-generate-ai:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+    }
+
+    .rec-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 24px;
+    }
+
+    .rec-card {
+        background: var(--glass-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: var(--transition-smooth);
+    }
+
+    .rec-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .rec-card.theme-purple { border-top: 4px solid #8b5cf6; }
+    .rec-card.theme-blue { border-top: 4px solid #3b82f6; }
+    .rec-card.theme-green { border-top: 4px solid #10b981; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="glass-card animate-fade-in" style="border: none; background: transparent; box-shadow: none; padding: 0;">
-    <div class="rec-header">
+<div class="rec-header">
+    <div>
+        <h1 style="font-size: 2rem; color: var(--text-primary); margin-bottom: 4px;">Strategic AI Advisory</h1>
+        <p style="color: var(--text-secondary); margin: 0;">Context-aware policy & operational recommendations generated using Gemini 2.5 Flash</p>
+    </div>
+
+    <button class="btn-generate-ai" id="btnGenAi" onclick="generateAIStrategy()">
+        <i class="fa-solid fa-brain"></i> Generate Strategic Action Plan
+    </button>
+</div>
+
+<div id="aiLoading" style="display: none; text-align: center; padding: 4rem 0;">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 1rem;"></i>
+    <h3 style="color: var(--text-primary);">Gemini AI is analyzing active land parcels & alerts...</h3>
+</div>
+
+<div class="rec-grid" id="recGrid">
+    {% for rec in recommendations %}
+    <div class="rec-card {% if rec.priority == 'HIGH' %}theme-purple{% elif rec.priority == 'MEDIUM' %}theme-blue{% else %}theme-green{% endif %}">
         <div>
-            <h2 class="section-title" style="margin-bottom: 5px; font-size: 2rem;">Strategic AI Advisory</h2>
-            <p style="color: var(--text-secondary); margin: 0;">Generate real-time, context-aware project recommendations using Gemini 2.5 Flash.</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <span style="font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-full); background: var(--bg-surface-2); color: var(--text-primary);">
+                    {{ rec.project.project_name }}
+                </span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: {% if rec.priority == 'HIGH' %}#8b5cf6{% else %}#3b82f6{% endif %};">
+                    PRIORITY: {{ rec.priority }}
+                </span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 10px; line-height: 1.3;">{{ rec.recommendation }}</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.5rem;">{{ rec.reason }}</p>
         </div>
-        <button class="btn-generate" id="generateBtn" onclick="generateRecommendations()">
-            <i class="fa-solid fa-brain"></i> Generate AI Strategy
+
+        <button style="width: 100%; background: var(--bg-surface-1); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 10px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-bolt"></i> Deploy Strategy Directive
         </button>
     </div>
-    
-    <!-- Empty State -->
-    <div id="emptyState" class="glass-card" style="padding: 60px; text-align: center; border: 1px dashed rgba(255,255,255,0.2);">
-        <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
-        <h3 style="margin-bottom: 10px; color: #fff;">No Strategies Generated Yet</h3>
-        <p style="color: var(--text-secondary);">Click the "Generate AI Strategy" button above to have Gemini analyze your active projects and alerts.</p>
+    {% empty %}
+    <div class="lg-card" style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-primary);">No Active Strategic Recommendations</h3>
+        <p style="color: var(--text-secondary);">Click "Generate Strategic Action Plan" to synthesize recommendations for your projects.</p>
     </div>
-    
-    <!-- Loading State -->
-    <div id="loadingState" class="ai-loading-state glass-card">
-        <div class="scanner"></div>
-        <h3 style="color: #f59e0b;">Gemini AI is analyzing project metrics...</h3>
-        <p style="color: var(--text-secondary);">Cross-referencing delays, budgets, and alerts to form a strategic plan.</p>
-    </div>
-    
-    <!-- Results Container -->
-    <div id="resultsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; display: none;">
-        <!-- Injected via JS -->
-    </div>
+    {% endfor %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    async function generateRecommendations() {
-        const btn = document.getElementById('generateBtn');
-        const emptyState = document.getElementById('emptyState');
-        const loadingState = document.getElementById('loadingState');
-        const resultsContainer = document.getElementById('resultsContainer');
-        
-        // Update UI for loading
+    async function generateAIStrategy() {
+        const btn = document.getElementById('btnGenAi');
+        const loading = document.getElementById('aiLoading');
+        const grid = document.getElementById('recGrid');
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
-        emptyState.style.display = 'none';
-        resultsContainer.style.display = 'none';
-        loadingState.style.display = 'flex';
-        
+        grid.style.display = 'none';
+        loading.style.display = 'block';
+
         try {
             const response = await fetch('/ai-recommendations/');
             const data = await response.json();
             
-            if (data.error) {
-                throw new Error(data.error);
+            if(data.recommendations) {
+                let html = '';
+                data.recommendations.forEach(r => {
+                    const theme = r.color_theme || 'blue';
+                    html += `
+                        <div class="rec-card theme-${theme}">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                    <span style="font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-full); background: var(--bg-surface-2); color: var(--text-primary);">
+                                        Gemini Recommendation
+                                    </span>
+                                </div>
+                                <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 10px; line-height: 1.3;">${r.title}</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.5rem;">${r.description}</p>
+                            </div>
+                            <button style="width: 100%; background: var(--bg-surface-1); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 10px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">
+                                <i class="fa-solid fa-bolt"></i> Deploy Strategy Directive
+                            </button>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
             }
-            
-            // Build cards
-            let cardsHTML = '';
-            data.recommendations.forEach(rec => {
-                const themeClass = `theme-${rec.color_theme || 'blue'}`;
-                cardsHTML += `
-                    <div class="rec-card ${themeClass}">
-                        <i class="fa-solid ${rec.icon || 'fa-chart-line'}" style="font-size: 2.2rem; margin-bottom: 16px;"></i>
-                        <h3 style="margin-bottom: 12px; font-size: 1.3rem; color: #fff;">${rec.title}</h3>
-                        <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; flex-grow: 1;">${rec.description}</p>
-                        <button style="margin-top: 20px; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: opacity 0.2s;">
-                            Apply Strategy <i class="fa-solid fa-arrow-right" style="margin-left: 8px; font-size: 0.9rem; color: white;"></i>
-                        </button>
-                    </div>
-                `;
-            });
-            
-            resultsContainer.innerHTML = cardsHTML;
-            resultsContainer.style.display = 'grid'; // ensure it reverts from none
-            
-        } catch (err) {
-            resultsContainer.innerHTML = `
-                <div class="glass-card" style="grid-column: 1 / -1; border-color: var(--danger); text-align: center; padding: 40px;">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
-                    <h3 style="color: #fff; margin-bottom: 10px;">Failed to Generate Strategy</h3>
-                    <p style="color: var(--danger);">${err.message || 'A network error occurred.'}</p>
-                </div>
-            `;
-            resultsContainer.style.display = 'block';
-        } finally {
-            // Restore UI
-            loadingState.style.display = 'none';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-brain"></i> Generate AI Strategy';
+        } catch(e) {
+            alert("Error generating recommendations.");
         }
+        loading.style.display = 'none';
+        grid.style.display = 'grid';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-brain"></i> Generate Strategic Action Plan';
     }
 </script>
 {% endblock %}

@@ -1,208 +1,175 @@
 {% extends 'base.html' %}
 
-{% block title %}GIS Map - Disaster Time-Lapse{% endblock %}
-{% block page_title %}Disaster Prediction & History Map{% endblock %}
+{% block title %}GIS Land Acquisition Risk Map - LandGuard AI{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-    .map-container {
-        height: 650px;
+    .map-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .map-controls-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        padding: 8px 14px;
+        border-radius: var(--radius-full);
+    }
+
+    .btn-map-filter {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 6px 14px;
+        border-radius: var(--radius-full);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .btn-map-filter.active, .btn-map-filter:hover {
+        background: var(--brand-accent);
+        color: white;
+    }
+
+    .gis-wrapper {
+        height: 720px;
         width: 100%;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--glass-border);
         overflow: hidden;
         position: relative;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    }
-    #map {
-        height: 100%;
-        width: 100%;
-        background-color: #0b0f19;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-    
-    /* Animation for the disaster ripples */
-    .disaster-marker {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .disaster-core {
-        background-color: #ff3838;
-        border-radius: 50%;
-        box-shadow: 0 0 15px #ff3838, 0 0 30px #ff3838;
-        z-index: 2;
-    }
-    .disaster-ripple {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border: 3px solid #ff3838;
-        border-radius: 50%;
-        animation: ripple 2s cubic-bezier(0.19, 1, 0.22, 1) infinite;
-        z-index: 1;
-        box-shadow: inset 0 0 10px rgba(255, 56, 56, 0.5);
-    }
-    
-    .disaster-predicted .disaster-core {
-        background-color: #ff9f1a;
-        box-shadow: 0 0 15px #ff9f1a, 0 0 30px #ff9f1a;
-    }
-    .disaster-predicted .disaster-ripple {
-        border-color: #ff9f1a;
-        box-shadow: inset 0 0 10px rgba(255, 159, 26, 0.5);
+        box-shadow: var(--glass-shadow);
     }
 
-    @keyframes ripple {
-        0% { transform: scale(0.3); opacity: 1; }
-        100% { transform: scale(3.5); opacity: 0; }
+    #gisMap {
+        height: 100%;
+        width: 100%;
+        background: #080d1a;
     }
 
-    /* Time-lapse Controls */
-    .timeline-control {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        padding: 15px 30px;
-        border-radius: 30px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        z-index: 1000;
-        border: 1px solid rgba(255,255,255,0.15);
-        color: white;
-        width: 80%;
-        max-width: 600px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-    .timeline-control button {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        border: none;
-        color: white;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: 0.3s;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-        font-size: 1.1rem;
-    }
-    .timeline-control button:hover {
-        transform: scale(1.1) translateY(-2px);
-        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
-    }
-    .timeline-slider {
-        flex-grow: 1;
-        -webkit-appearance: none;
-        height: 6px;
-        background: rgba(255,255,255,0.15);
-        border-radius: 3px;
-        outline: none;
-    }
-    .timeline-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #3b82f6;
-        cursor: pointer;
-        transition: 0.2s;
-        box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
-    }
-    .timeline-slider::-webkit-slider-thumb:hover {
-        transform: scale(1.2);
-    }
-    .year-display {
-        font-size: 1.4rem;
-        font-weight: 800;
-        min-width: 70px;
-        text-align: center;
-        color: #fff;
-        text-shadow: 0 2px 10px rgba(59, 130, 246, 0.8);
-    }
-    
-    .legend {
+    .map-legend {
         position: absolute;
         top: 20px;
         right: 20px;
         background: rgba(15, 23, 42, 0.9);
-        padding: 20px;
-        border-radius: 16px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding: 18px;
+        border-radius: var(--radius-md);
         z-index: 1000;
+        border: 1px solid var(--glass-border);
         color: white;
-        border: 1px solid rgba(255,255,255,0.15);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        box-shadow: var(--glass-shadow);
     }
-    .legend-item {
+
+    .legend-row {
         display: flex;
         align-items: center;
-        margin-bottom: 12px;
-        font-size: 1rem;
+        gap: 10px;
+        margin-bottom: 10px;
+        font-size: 0.85rem;
         font-weight: 500;
     }
-    .legend-item:last-child { margin-bottom: 0; }
-    .legend-color {
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    /* Ripple Animation Markers */
+    .project-ripple-marker {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ripple-core {
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        margin-right: 12px;
+        z-index: 2;
+        border: 2px solid white;
     }
-    
-    /* Darken satellite map slightly for better marker contrast */
-    .leaflet-layer {
-        filter: brightness(0.8) contrast(1.2) saturate(1.1);
+
+    .ripple-wave {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        animation: pulse-wave 2s infinite cubic-bezier(0.19, 1, 0.22, 1);
+        z-index: 1;
     }
-    
-    /* Custom style for location names on the map */
-    .leaflet-tooltip.location-label {
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #f8fafc;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        backdrop-filter: blur(5px);
-        border-radius: 6px;
-        font-family: 'Inter', sans-serif;
-        font-weight: 500;
-        padding: 4px 8px;
+
+    @keyframes pulse-wave {
+        0% { transform: scale(0.4); opacity: 1; }
+        100% { transform: scale(3.5); opacity: 0; }
     }
-    .leaflet-tooltip.location-label::before {
-        border-bottom-color: rgba(15, 23, 42, 0.85);
+
+    .leaflet-popup-content-wrapper {
+        background: var(--bg-surface-1);
+        color: var(--text-primary);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .leaflet-popup-tip {
+        background: var(--bg-surface-1);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="glass-card animate-fade-in" style="padding: 0; overflow: hidden; border: none;">
-    <div class="map-container">
-        <div id="map"></div>
-        
-        <div class="legend">
-            <div style="font-weight: 700; margin-bottom: 15px; font-size: 1.1rem; color: #e2e8f0;">Disaster Type</div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #ff3838; box-shadow: 0 0 15px #ff3838;"></div> Previous (Historical)
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #ff9f1a; box-shadow: 0 0 15px #ff9f1a;"></div> Predicted (Future)
-            </div>
-        </div>
+<div class="map-header">
+    <div>
+        <h1 style="font-size: 2rem; color: white; margin-bottom: 4px;">GIS Land Acquisition Risk Map</h1>
+        <p style="color: var(--text-secondary); margin: 0;">Interactive OpenStreetMap & Satellite Overlay with Real-Time Risk Radar Signals</p>
+    </div>
 
-        <div class="timeline-control">
-            <button id="playBtn"><i class="fa-solid fa-play"></i></button>
-            <input type="range" id="timeSlider" class="timeline-slider" min="2015" max="2030" value="2015" step="1">
-            <div class="year-display" id="yearDisplay">2015</div>
+    <div class="map-controls-bar">
+        <i class="fa-solid fa-layer-group" style="color: var(--brand-cyan); margin-left: 6px;"></i>
+        <button class="btn-map-filter active" onclick="filterMapRisk('ALL', this)">All Projects</button>
+        <button class="btn-map-filter" onclick="filterMapRisk('CRITICAL', this)">Critical (>75%)</button>
+        <button class="btn-map-filter" onclick="filterMapRisk('HIGH', this)">High (50-75%)</button>
+        <button class="btn-map-filter" onclick="filterMapRisk('MEDIUM', this)">Medium Risk</button>
+        <button class="btn-map-filter" onclick="filterMapRisk('LOW', this)">Low Risk</button>
+    </div>
+</div>
+
+<div class="gis-wrapper">
+    <div id="gisMap"></div>
+
+    <div class="map-legend">
+        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 12px; color: var(--brand-cyan);">
+            <i class="fa-solid fa-satellite"></i> Delay Risk Legend
+        </div>
+        <div class="legend-row">
+            <div class="legend-dot" style="background: #ef4444; box-shadow: 0 0 10px #ef4444;"></div>
+            <span>Critical Risk (> 75%)</span>
+        </div>
+        <div class="legend-row">
+            <div class="legend-dot" style="background: #f97316; box-shadow: 0 0 10px #f97316;"></div>
+            <span>High Risk (50 - 75%)</span>
+        </div>
+        <div class="legend-row">
+            <div class="legend-dot" style="background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></div>
+            <span>Medium Risk (25 - 50%)</span>
+        </div>
+        <div class="legend-row">
+            <div class="legend-dot" style="background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+            <span>Low Risk (< 25%)</span>
         </div>
     </div>
 </div>
@@ -211,155 +178,98 @@
 {% block extra_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Initialize map
-    const map = L.map('map', {
-        zoomControl: false,
-        attributionControl: false
-    }).setView([22.5937, 78.9629], 5); // Center on India
-
-    // Add Esri World Imagery (Satellite) for a stunning realistic look
+    const map = L.map('gisMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 5);
+    
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19
     }).addTo(map);
-    
-    // Zoom control top left
+
     L.control.zoom({ position: 'topleft' }).addTo(map);
 
-    // Fix for map rendering inside animated/flex containers
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 500);
+    const projects = {{ projects_json|safe }};
+    const markers = [];
 
-    // Generate mock disaster data for demonstration
-    const disasters = [];
-    const centerLat = 22.5937, centerLng = 78.9629;
-    const locations = [
-        "Mumbai", "Delhi", "Bengaluru", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad", "Surat", "Jaipur",
-        "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Patna", "Vadodara", "Ghaziabad",
-        "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad",
-        "Amritsar", "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur", "Gwalior", "Vijayawada", "Jodhpur",
-        "Madurai", "Raipur", "Kota", "Guwahati", "Chandigarh", "Mysore", "Bhubaneswar", "Thiruvananthapuram", "Dehradun"
-    ];
-    
-    for(let i = 0; i < 200; i++) {
-        const year = 2015 + Math.floor(Math.random() * 16); // 2015 to 2030
-        const isPredicted = year > 2024;
-        const randomLocation = locations[Math.floor(Math.random() * locations.length)];
-        
-        disasters.push({
-            lat: centerLat + (Math.random() - 0.5) * 22,
-            lng: centerLng + (Math.random() - 0.5) * 25,
-            year: year,
-            type: isPredicted ? 'predicted' : 'historical',
-            intensity: Math.random() * 0.6 + 0.4, // 0.4 to 1.0
-            location: randomLocation
-        });
-    }
+    const getRiskColor = (level) => {
+        switch(level) {
+            case 'CRITICAL': return '#ef4444';
+            case 'HIGH': return '#f97316';
+            case 'MEDIUM': return '#f59e0b';
+            default: return '#10b981';
+        }
+    };
 
-    // Animation state
-    let currentYear = 2015;
-    let isPlaying = false;
-    let playInterval;
-    let activeMarkers = [];
-
-    const slider = document.getElementById('timeSlider');
-    const yearDisplay = document.getElementById('yearDisplay');
-    const playBtn = document.getElementById('playBtn');
-
-    // Create custom icon for animated glowing marker
-    const createRippleIcon = (type, intensity) => {
-        const className = type === 'predicted' ? 'disaster-marker disaster-predicted' : 'disaster-marker';
-        const size = 60 * intensity; // Much larger pulsing ring
-        const coreSize = 16 * intensity; // Solid core size
-        
+    const createRippleIcon = (riskLevel) => {
+        const color = getRiskColor(riskLevel);
+        const size = 48;
         return L.divIcon({
-            html: `<div class="${className}" style="width: ${size}px; height: ${size}px; margin-left: -${size/2}px; margin-top: -${size/2}px;">
-                       <div class="disaster-core" style="width: ${coreSize}px; height: ${coreSize}px;"></div>
-                       <div class="disaster-ripple"></div>
+            html: `<div class="project-ripple-marker" style="width: ${size}px; height: ${size}px; margin-left: -${size/2}px; margin-top: -${size/2}px;">
+                       <div class="ripple-core" style="background-color: ${color}; box-shadow: 0 0 15px ${color};"></div>
+                       <div class="ripple-wave" style="border: 2px solid ${color};"></div>
                    </div>`,
             className: '',
             iconSize: [0, 0]
         });
     };
 
-    const updateMapForYear = (year) => {
-        // Clear old markers
-        activeMarkers.forEach(m => map.removeLayer(m));
-        activeMarkers = [];
-        
-        // Find disasters for this year
-        const currentDisasters = disasters.filter(d => d.year === year);
-        
-        // Plot new markers
-        currentDisasters.forEach(d => {
-            const marker = L.marker([d.lat, d.lng], {
-                icon: createRippleIcon(d.type, d.intensity)
-            }).addTo(map);
-            
-            // Add a permanent tooltip to show the location name directly on the map
-            marker.bindTooltip(`<strong>${d.location}</strong>`, {
-                permanent: true,
-                direction: 'bottom',
-                className: 'location-label',
-                offset: [0, 15]
-            });
-            
-            marker.bindPopup(`
-                <div style="text-align:center; padding: 10px; font-family: 'Inter', sans-serif;">
-                    <div style="font-size: 1.1rem; font-weight: bold; color: ${d.type === 'predicted' ? '#ff9f1a' : '#ff3838'}; margin-bottom: 5px;">
-                        ${d.type === 'predicted' ? '<i class="fa-solid fa-triangle-exclamation"></i> Predicted Risk' : '<i class="fa-solid fa-clock-rotate-left"></i> Historical Disaster'}
+    projects.forEach(p => {
+        const marker = L.marker([p.lat, p.lng], {
+            icon: createRippleIcon(p.risk_level)
+        }).addTo(map);
+
+        marker.riskLevel = p.risk_level;
+        markers.push(marker);
+
+        const color = getRiskColor(p.risk_level);
+
+        marker.bindPopup(`
+            <div style="padding: 6px; font-family: 'Inter', sans-serif; min-width: 240px;">
+                <div style="font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 4px;">
+                    ${p.name}
+                </div>
+                <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">
+                    <i class="fa-solid fa-location-dot"></i> ${p.district}, ${p.state} | Type: ${p.type}
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+                    <div style="display:flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                        <span>Acquisition Progress:</span>
+                        <span style="font-weight: bold; color: white;">${p.progress_pct}%</span>
                     </div>
-                    <div style="color: #333; font-size: 0.95rem;">
-                        <strong>Location:</strong> ${d.location}<br>
-                        <strong>Year:</strong> ${d.year}<br>
-                        <strong>Intensity:</strong> ${(d.intensity * 10).toFixed(1)} / 10
+                    <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden;">
+                        <div style="width: ${p.progress_pct}%; background: #3b82f6; height: 100%;"></div>
+                    </div>
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">
+                        Acquired: ${p.acquired_area} ha / Total: ${p.total_area} ha
                     </div>
                 </div>
-            `);
-            
-            activeMarkers.push(marker);
-        });
-    };
 
-    const playAnimation = () => {
-        isPlaying = true;
-        playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        
-        playInterval = setInterval(() => {
-            if (currentYear >= 2030) {
-                currentYear = 2015; // Loop back
+                <div style="display:flex; justify-content: space-between; align-items: center; background: ${color}20; padding: 8px 12px; border-radius: 8px; border: 1px solid ${color}40; margin-bottom: 10px;">
+                    <span style="font-weight: bold; font-size: 0.85rem; color: ${color};">
+                        AI Delay Risk: ${p.risk_level}
+                    </span>
+                    <span style="font-weight: bold; font-size: 0.95rem; color: ${color};">
+                        ${p.delay_prob}%
+                    </span>
+                </div>
+
+                <button style="width: 100%; background: #2563eb; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.82rem;" onclick="openProjectModal('${p.id}')">
+                    Full AI Risk Diagnosis
+                </button>
+            </div>
+        `);
+    });
+
+    function filterMapRisk(riskLevel, btn) {
+        document.querySelectorAll('.btn-map-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        markers.forEach(m => {
+            if(riskLevel === 'ALL' || m.riskLevel === riskLevel) {
+                map.addLayer(m);
             } else {
-                currentYear++;
+                map.removeLayer(m);
             }
-            slider.value = currentYear;
-            yearDisplay.innerText = currentYear;
-            updateMapForYear(currentYear);
-        }, 1200); // slightly faster
-    };
-
-    const stopAnimation = () => {
-        isPlaying = false;
-        playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        clearInterval(playInterval);
-    };
-
-    // Event listeners
-    playBtn.addEventListener('click', () => {
-        if (isPlaying) {
-            stopAnimation();
-        } else {
-            playAnimation();
-        }
-    });
-
-    slider.addEventListener('input', (e) => {
-        stopAnimation();
-        currentYear = parseInt(e.target.value);
-        yearDisplay.innerText = currentYear;
-        updateMapForYear(currentYear);
-    });
-
-    // Initialize first view
-    updateMapForYear(currentYear);
+        });
+    }
 </script>
 {% endblock %}

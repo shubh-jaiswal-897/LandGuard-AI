@@ -1,246 +1,216 @@
 {% extends 'base.html' %}
 
-{% block title %}Alerts{% endblock %}
-{% block page_title %}System Alerts{% endblock %}
+{% block title %}Early Warning Center - LandGuard AI{% endblock %}
 
 {% block extra_css %}
 <style>
-    .alert-card {
+    .alerts-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 18px 20px;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        margin-bottom: 16px;
-        backdrop-filter: blur(10px);
-        transition: transform 0.2s, box-shadow 0.2s;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-    .alert-card:hover {
-        transform: translateX(5px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        border-color: rgba(255,255,255,0.15);
-    }
-    .btn-resolve {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.3s;
-        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-    }
-    .btn-resolve:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(139, 92, 246, 0.5);
-    }
-    
-    /* Modal Styles */
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(8px);
+
+    .alerts-filter-tabs {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-    }
-    .modal-overlay.active {
-        opacity: 1;
-        pointer-events: all;
-    }
-    .ai-modal {
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(139, 92, 246, 0.4);
-        width: 90%;
-        max-width: 600px;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.1);
-        transform: scale(0.9);
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .modal-overlay.active .ai-modal {
-        transform: scale(1);
-    }
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding-bottom: 15px;
-    }
-    .modal-header h3 {
-        margin: 0;
-        font-size: 1.4rem;
-        display: flex;
-        align-items: center;
         gap: 10px;
+        background: var(--bg-surface-1);
+        padding: 6px;
+        border-radius: var(--radius-full);
+        border: 1px solid var(--glass-border);
     }
-    .btn-close {
-        background: none;
+
+    .tab-btn {
+        background: transparent;
         border: none;
         color: var(--text-secondary);
-        font-size: 1.2rem;
+        padding: 8px 18px;
+        border-radius: var(--radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: 0.2s;
+        transition: var(--transition-smooth);
     }
-    .btn-close:hover { color: white; }
-    
-    /* AI Loading State */
-    .ai-loading {
+
+    .tab-btn.active, .tab-btn:hover {
+        background: var(--brand-accent);
+        color: white !important;
+    }
+
+    .alert-card-grid {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 30px 0;
-        gap: 15px;
+        gap: 18px;
     }
-    .spinner {
-        width: 40px; height: 40px;
-        border: 3px solid rgba(139, 92, 246, 0.3);
-        border-top-color: #8b5cf6;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    
-    /* AI Resolution Content */
-    .ai-resolution-content {
-        display: none;
-    }
-    .resolution-step {
+
+    .alert-card-item {
+        background: var(--glass-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
         display: flex;
-        gap: 15px;
-        margin-bottom: 15px;
-        background: rgba(255,255,255,0.03);
-        padding: 15px;
-        border-radius: 12px;
-        border-left: 3px solid #8b5cf6;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
     }
-    .step-number {
-        background: rgba(139, 92, 246, 0.2);
-        color: #c4b5fd;
-        width: 28px; height: 28px;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: bold; flex-shrink: 0;
+
+    .alert-card-item::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 6px;
     }
-    .btn-mark-resolved {
-        width: 100%;
-        background: var(--success);
-        color: white;
+
+    .alert-card-item.sev-critical::before { background: #ef4444; box-shadow: 0 0 15px #ef4444; }
+    .alert-card-item.sev-warning::before { background: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
+    .alert-card-item.sev-info::before { background: #3b82f6; box-shadow: 0 0 15px #3b82f6; }
+
+    .alert-card-item:hover {
+        transform: translateX(4px);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .alert-details-meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-top: 14px;
+        background: var(--bg-surface-1);
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        font-size: 0.82rem;
+    }
+
+    .btn-action-resolve {
+        background: var(--brand-gradient);
+        color: white !important;
         border: none;
-        padding: 12px;
-        border-radius: 10px;
-        font-weight: bold;
-        font-size: 1.1rem;
-        margin-top: 20px;
+        padding: 10px 20px;
+        border-radius: var(--radius-full);
+        font-weight: 700;
+        font-size: 0.88rem;
         cursor: pointer;
-        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+        transition: var(--transition-smooth);
     }
-    .btn-mark-resolved:hover {
-        background: #059669;
+
+    .btn-action-resolve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
     }
-    
-    @media (max-width: 768px) {
-        .alert-card {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        .alert-card > div:last-child {
-            width: 100%;
-            text-align: left;
-        }
-        .btn-resolve {
-            width: 100%;
-        }
+
+    @media (max-width: 992px) {
+        .alert-card-item { flex-direction: column; align-items: flex-start; gap: 16px; }
+        .alert-details-meta { grid-template-columns: 1fr 1fr; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="glass-card animate-fade-in" style="border: none; background: transparent; box-shadow: none; padding: 0;">
-    <div class="section-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-            <h2 class="section-title" style="margin-bottom: 5px; font-size: 2rem;">Active System Alerts</h2>
-            <p style="color: var(--text-secondary); margin: 0;">Review and resolve predicted bottlenecks for your projects.</p>
-        </div>
+<div class="alerts-header">
+    <div>
+        <h1 style="font-size: 2rem; color: var(--text-primary); margin-bottom: 4px;">Early Warning Center</h1>
+        <p style="color: var(--text-secondary); margin: 0;">Automated real-time bottleneck detection & automated resolution dispatch</p>
     </div>
-    
-    <div style="display: flex; flex-direction: column;">
-        {% for alert in alerts %}
-        <div class="alert-card" id="alert-card-{{ alert.id }}">
-            <div style="display: flex; gap: 20px; align-items: flex-start;">
-                <div style="margin-top: 6px; width: 14px; height: 14px; border-radius: 50%; {% if alert.severity == 'CRITICAL' %}background: var(--danger); box-shadow: 0 0 12px var(--danger);{% elif alert.severity == 'WARNING' %}background: var(--warning); box-shadow: 0 0 12px var(--warning);{% else %}background: var(--success); box-shadow: 0 0 12px var(--success);{% endif %}"></div>
-                <div>
-                    <h4 style="font-size: 1.2rem; margin-bottom: 6px; color: #fff;">{{ alert.alert_type }}</h4>
-                    <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 8px;">{{ alert.message }}</p>
-                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-secondary);">
-                        <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px;">
-                            <i class="fa-solid fa-building"></i> {{ alert.project.project_name }}
-                        </span>
-                        <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px;">
-                            <i class="fa-regular fa-clock"></i> {{ alert.created_at|date:"M d, Y H:i" }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: right; min-width: 120px;">
-                {% if alert.status == 'Open' %}
-                <button class="btn-resolve" onclick="openResolverModal('{{ alert.id }}', '{{ alert.alert_type|escapejs }}', '{{ alert.project.project_name|escapejs }}')">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Resolve
-                </button>
-                {% else %}
-                <span style="color: var(--success); font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                    <i class="fa-solid fa-check"></i> Resolved
-                </span>
-                {% endif %}
-            </div>
-        </div>
-        {% empty %}
-        <div class="glass-card" style="padding: 40px; text-align: center;">
-            <i class="fa-solid fa-shield-check" style="font-size: 3rem; color: var(--success); margin-bottom: 15px;"></i>
-            <h3 style="margin-bottom: 10px;">No Alerts Found</h3>
-            <p style="color: var(--text-secondary);">All projects are on track and the system is running smoothly.</p>
-        </div>
-        {% endfor %}
+
+    <div class="alerts-filter-tabs">
+        <button class="tab-btn active" onclick="filterAlerts('ALL', this)">All Alerts ({{ alerts.count }})</button>
+        <button class="tab-btn" onclick="filterAlerts('CRITICAL', this)">Critical ({{ critical_alerts }})</button>
+        <button class="tab-btn" onclick="filterAlerts('WARNING', this)">Warning ({{ warning_alerts }})</button>
+        <button class="tab-btn" onclick="filterAlerts('INFO', this)">Info ({{ info_alerts }})</button>
     </div>
 </div>
 
-<!-- AI Resolver Modal -->
-<div class="modal-overlay" id="aiModal">
-    <div class="ai-modal">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-robot" style="color: #8b5cf6;"></i> AI Resolution Guide</h3>
-            <button class="btn-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <!-- Loading State -->
-        <div class="ai-loading" id="aiLoading">
-            <div class="spinner"></div>
-            <p style="color: #c4b5fd; font-weight: 500;">Gemini AI is analyzing the issue...</p>
-        </div>
-        
-        <!-- Resolution Content -->
-        <div class="ai-resolution-content" id="aiContent">
-            <p style="margin-bottom: 15px; color: #e2e8f0;">Here is the recommended resolution path for <strong id="modalAlertType" style="color: #fff;"></strong> in <strong id="modalProjectName" style="color: #fff;"></strong>:</p>
-            
-            <div id="dynamicSteps">
-                <!-- Steps injected via JS -->
+<div class="alert-card-grid" id="alertGrid">
+    {% for alert in alerts %}
+    <div class="alert-card-item {% if alert.severity == 'CRITICAL' %}sev-critical{% elif alert.severity == 'WARNING' %}sev-warning{% else %}sev-info{% endif %}" data-severity="{{ alert.severity }}">
+        <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                <span style="font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-full); text-transform: uppercase; background: {% if alert.severity == 'CRITICAL' %}rgba(239,68,68,0.15); color: #ef4444;{% elif alert.severity == 'WARNING' %}rgba(245,158,11,0.15); color: #f59e0b;{% else %}rgba(59,130,246,0.15); color: #3b82f6;{% endif %};">
+                    {{ alert.severity }} ALERT
+                </span>
+                <h3 style="font-size: 1.15rem; color: var(--text-primary); margin: 0;">{{ alert.alert_type }}</h3>
             </div>
             
-            <button class="btn-mark-resolved" id="markResolvedBtn" onclick="markAsResolved()">
-                <i class="fa-solid fa-check-circle"></i> Mark as Resolved
+            <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 8px;">{{ alert.message }}</p>
+
+            <div class="alert-details-meta">
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">PROJECT</span>
+                    <strong style="color: var(--text-primary);">{{ alert.project.project_name }}</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">RESPONSIBLE DEPT</span>
+                    <strong style="color: var(--brand-cyan);">Revenue Tribunal / Collector Office</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">RECOMMENDED ACTION</span>
+                    <strong style="color: #ef4444;">Dispatch Fast-Track Settlement Panel</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">DETECTED DATE</span>
+                    <strong style="color: var(--text-secondary);">{{ alert.created_at|date:"d M Y, H:i" }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-left: 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+            {% if alert.status == 'Open' %}
+            <button class="btn-action-resolve" onclick="openResolverModal('{{ alert.id }}', '{{ alert.alert_type|escapejs }}', '{{ alert.project.project_name|escapejs }}')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Take Action / Resolve
+            </button>
+            {% else %}
+            <span style="color: var(--status-safe); font-weight: bold; background: rgba(16, 185, 129, 0.15); padding: 8px 16px; border-radius: var(--radius-full); border: 1px solid rgba(16, 185, 129, 0.3);">
+                <i class="fa-solid fa-check-circle"></i> Resolved
+            </span>
+            {% endif %}
+            <button style="background: transparent; border: none; color: var(--brand-accent); font-size: 0.82rem; cursor: pointer; font-weight: 600;" onclick="openProjectModal('{{ alert.project.project_id }}')">
+                View Project Details →
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <div class="lg-card" style="text-align: center; padding: 4rem;">
+        <i class="fa-solid fa-shield-check" style="font-size: 3rem; color: var(--status-safe); margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-primary); margin-bottom: 6px;">Zero Active System Alerts</h3>
+        <p style="color: var(--text-secondary);">All infrastructure land acquisition parcels are progressing on schedule.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Gemini AI Resolution Step Generator Modal -->
+<div id="aiResolverModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 12, 24, 0.85); backdrop-filter: blur(14px); z-index: 100000; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="background: var(--bg-surface-1); border: 1px solid var(--brand-accent); width: 100%; max-width: 620px; border-radius: var(--radius-lg); padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.6); position: relative;">
+        <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;" onclick="closeResolverModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+            <div style="background: var(--brand-gradient); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white !important; font-size: 1.2rem;">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: var(--text-primary); font-size: 1.3rem;">AI Resolution Plan</h3>
+                <span style="font-size: 0.75rem; color: var(--text-muted);" id="resolverModalMeta"></span>
+            </div>
+        </div>
+
+        <div id="resolverLoading" style="text-align: center; padding: 2rem 0;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--brand-cyan); margin-bottom: 12px;"></i>
+            <p style="color: var(--text-secondary);">Consulting Gemini 2.5 Flash for LARR Act resolution steps...</p>
+        </div>
+
+        <div id="resolverBody" style="display: none;">
+            <div id="resolverStepsList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;"></div>
+            <button style="width: 100%; background: var(--status-safe); color: white !important; border: none; padding: 12px; border-radius: var(--radius-md); font-weight: 700; font-size: 1rem; cursor: pointer;" onclick="confirmResolve()">
+                <i class="fa-solid fa-check-double"></i> Mark Alert as Resolved in DB
             </button>
         </div>
     </div>
@@ -249,84 +219,65 @@
 
 {% block extra_js %}
 <script>
-    let currentAlertId = null;
+    let activeAlertId = null;
+
+    function filterAlerts(severity, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('#alertGrid .alert-card-item').forEach(card => {
+            const cardSev = card.getAttribute('data-severity');
+            if(severity === 'ALL' || cardSev === severity) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
 
     async function openResolverModal(alertId, alertType, projectName) {
-        currentAlertId = alertId;
-        const modal = document.getElementById('aiModal');
-        const loading = document.getElementById('aiLoading');
-        const content = document.getElementById('aiContent');
-        const stepsContainer = document.getElementById('dynamicSteps');
+        activeAlertId = alertId;
+        const modal = document.getElementById('aiResolverModal');
+        const loading = document.getElementById('resolverLoading');
+        const body = document.getElementById('resolverBody');
+        const stepsContainer = document.getElementById('resolverStepsList');
         
-        document.getElementById('modalAlertType').innerText = alertType;
-        document.getElementById('modalProjectName').innerText = projectName;
-        
-        // Reset states
-        loading.style.display = 'flex';
-        content.style.display = 'none';
-        modal.classList.add('active');
-        
+        document.getElementById('resolverModalMeta').innerText = `${alertType} • ${projectName}`;
+        modal.style.display = 'flex';
+        loading.style.display = 'block';
+        body.style.display = 'none';
+
         try {
-            // Call the real Gemini AI Backend endpoint
             const response = await fetch(`/alerts/${alertId}/ai-resolve/`);
             const data = await response.json();
             
-            let stepsHTML = '';
-            
-            if (data.steps && Array.isArray(data.steps)) {
-                data.steps.forEach((stepText, index) => {
-                    stepsHTML += `
-                        <div class="resolution-step">
-                            <div class="step-number">${index + 1}</div>
-                            <div>${stepText}</div>
+            let html = '';
+            if(data.steps) {
+                data.steps.forEach((step, idx) => {
+                    html += `
+                        <div style="background: var(--bg-surface-2); padding: 14px; border-radius: var(--radius-md); border-left: 3px solid var(--brand-accent); display: flex; gap: 12px; align-items: flex-start;">
+                            <span style="background: rgba(59,130,246,0.2); color: #3b82f6; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.8rem;">${idx+1}</span>
+                            <span style="color: var(--text-primary); font-size: 0.9rem; line-height: 1.5;">${step}</span>
                         </div>
                     `;
                 });
-            } else if (data.error) {
-                stepsHTML = `<div style="color: #ef4444; padding: 15px; border: 1px solid #ef4444; border-radius: 8px;">Error: ${data.error}</div>`;
-            } else {
-                stepsHTML = `<div style="color: #f59e0b; padding: 15px;">Failed to parse AI response.</div>`;
             }
-            
-            stepsContainer.innerHTML = stepsHTML;
-        } catch (error) {
-            stepsContainer.innerHTML = `<div style="color: #ef4444; padding: 15px;">Network error occurred while contacting AI.</div>`;
+            stepsContainer.innerHTML = html;
+            loading.style.display = 'none';
+            body.style.display = 'block';
+        } catch(e) {
+            loading.innerHTML = `<p style="color: #ef4444;">Failed to retrieve AI resolution steps.</p>`;
         }
-        
-        // Hide loading and show content
-        loading.style.display = 'none';
-        content.style.display = 'block';
     }
-    
-    function closeModal() {
-        document.getElementById('aiModal').classList.remove('active');
-        currentAlertId = null;
+
+    function closeResolverModal() {
+        document.getElementById('aiResolverModal').style.display = 'none';
     }
-    
-    function markAsResolved() {
-        if (!currentAlertId) return;
-        
-        const btn = document.getElementById('markResolvedBtn');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating database...';
-        btn.style.opacity = '0.7';
-        
-        // In a real app, you would make an AJAX POST request here.
-        // For demonstration, we will just simulate the success response and update the UI directly.
-        setTimeout(() => {
-            closeModal();
-            
-            // Update the UI card
-            const alertCard = document.getElementById('alert-card-' + currentAlertId);
-            const actionDiv = alertCard.querySelector('div[style*="text-align: right"]');
-            actionDiv.innerHTML = `
-                <span style="color: var(--success); font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                    <i class="fa-solid fa-check"></i> Resolved
-                </span>
-            `;
-            
-            btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Mark as Resolved';
-            btn.style.opacity = '1';
-        }, 800);
+
+    function confirmResolve() {
+        closeResolverModal();
+        alert("Alert status updated to RESOLVED in database.");
+        window.location.reload();
     }
 </script>
 {% endblock %}

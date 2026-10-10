@@ -10,9 +10,14 @@ from dashboard.models import Project, LandAcquisition
 from alerts.models import Alert
 from prediction.models import Prediction, RiskFactor
 
+from documents.models import Document
+from recommendations.models import Recommendation
+
 def populate():
     # Clear existing data to avoid duplicates if run multiple times
     Project.objects.all().delete()
+    Document.objects.all().delete()
+    Recommendation.objects.all().delete()
     
     projects_data = [
         {
@@ -91,33 +96,79 @@ def populate():
             compensation_pending=proj.project_status != "Completed"
         )
 
-        # Create Prediction
-        delay_prob = random.uniform(5.0, 95.0)
-        risk = 'LOW'
-        if delay_prob > 75: risk = 'CRITICAL'
-        elif delay_prob > 50: risk = 'HIGH'
-        elif delay_prob > 25: risk = 'MEDIUM'
+        # Create Prediction & XAI Risk Factors via AI prediction engine
+        from prediction.utils import generate_prediction_for_project
+        pred = generate_prediction_for_project(proj)
+        risk = pred.risk_level
 
-        pred = Prediction.objects.create(
-            project=proj,
-            delay_probability=round(delay_prob, 2),
-            risk_level=risk
-        )
-
-        # Risk Factors
-        RiskFactor.objects.create(prediction=pred, factor_name="Legal Disputes", impact_value=round(random.uniform(0.1, 0.9), 2), explanation="Ongoing land ownership disputes.")
-        
         # Create Alerts
         if risk in ['HIGH', 'CRITICAL'] or p_data["status"] == "Delayed":
             Alert.objects.create(
                 project=proj,
                 alert_type="Legal Dispute Delay" if random.choice([True, False]) else "Compensation Protest",
                 severity="CRITICAL" if risk == 'CRITICAL' else "WARNING",
-                message=f"High risk of delay detected due to land acquisition protests in {p_data['district']}.",
+                message=f"High risk of delay detected due to land acquisition disputes in {p_data['district']}.",
                 status="Open"
             )
 
-    print("Successfully populated database with 10 real-world projects!")
+        # Create Official Documents
+        Document.objects.create(
+            project=proj,
+            title=f"LARR Gazette Notification Sec 11 - {proj.project_name}",
+            doc_type="GAZETTE",
+            reference_number=f"GZ-{proj.project_id}-2024",
+            file_size="2.4 MB",
+            status="Verified"
+        )
+        Document.objects.create(
+            project=proj,
+            title=f"Environmental & Forest Clearance Certificate",
+            doc_type="ENVIRONMENTAL",
+            reference_number=f"ENV-{proj.project_id}-NOC",
+            file_size="1.8 MB",
+            status="Verified" if proj.project_status != "Delayed" else "Pending Review"
+        )
+        Document.objects.create(
+            project=proj,
+            title=f"Compensation Disbursement Ledger",
+            doc_type="COMPENSATION",
+            reference_number=f"CMP-{proj.project_id}-R4",
+            file_size="3.1 MB",
+            status="Verified"
+        )
+
+        # Create Strategic Recommendations
+        if risk in ['HIGH', 'CRITICAL']:
+            Recommendation.objects.create(
+                project=proj,
+                recommendation=f"Deploy Fast-Track Revenue Tribunal & Negotiated Compensation Committee in {proj.district}.",
+                priority="HIGH",
+                reason=f"Project is facing {pred.delay_probability}% delay probability due to {proj.total_land_area - proj.acquired_land_area} ha pending land."
+            )
+        else:
+            Recommendation.objects.create(
+                project=proj,
+                recommendation=f"Finalize cadastral land mutation and pillar marking with Tehsildar office.",
+                priority="MEDIUM",
+                reason=f"Acquisition progress is on track at {round(proj.acquired_land_area/proj.total_land_area*100, 1)}%."
+            )
+
+    from django.contrib.auth.models import User
+    from accounts.models import UserProfile
+
+    user, created = User.objects.get_or_create(username='shubh1111', defaults={'email': 'shubh1111@landguard.gov.in', 'is_staff': True, 'is_superuser': True})
+    user.set_password('shubh1111')
+    user.is_staff = True
+    user.is_superuser = True
+    user.save()
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile.role = 'ADMINISTRATOR'
+    profile.department = 'Ministry of Infrastructure'
+    profile.save()
+
+    print("Successfully populated database and configured superuser shubh1111!")
 
 if __name__ == '__main__':
     populate()
+

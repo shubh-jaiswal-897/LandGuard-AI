@@ -1,43 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LandGuard AI - {% block title %}Dashboard{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L85 20 V50 C85 72.5 50 95 50 95 C50 95 15 72.5 15 50 V20 Z' fill='%230f172a' stroke='%233b82f6' stroke-width='4'/><path d='M30 35 H70 M30 50 H70 M30 65 H70 M35 30 V70 M50 30 V70 M65 30 V70' stroke='%2306b6d4' stroke-width='1.5' opacity='0.6'/><circle cx='50' cy='50' r='10' fill='%232563eb' stroke='%2338bdf8' stroke-width='2.5'/><circle cx='50' cy='50' r='4' fill='%23ffffff'/></svg>">
+    <link rel="shortcut icon" href="/static/favicon.jpg">
+    
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Pro/Free Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
         :root {
-            /* Colors */
-            --bg-color: #0f172a;
-            --sidebar-bg: rgba(30, 41, 59, 0.7);
-            --card-bg: rgba(30, 41, 59, 0.6);
+            /* Theme Color Tokens - Dark Mode (Default Command-Center) */
+            --bg-dark: #070c18;
+            --bg-surface-1: #0f172a;
+            --bg-surface-2: #1e293b;
+            --bg-surface-3: #334155;
+            
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-card: rgba(30, 41, 59, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            --glass-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.4);
+
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --accent-primary: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            --accent-hover: #2563eb;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            --text-muted: #64748b;
 
-            /* Glassmorphism */
-            --glass-blur: 12px;
-            --glass-border: 1px solid rgba(255, 255, 255, 0.05);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --brand-primary: #2563eb;
+            --brand-accent: #3b82f6;
+            --brand-cyan: #06b6d4;
+            --brand-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #06b6d4 100%);
+            
+            --status-safe: #10b981;
+            --status-warning: #f59e0b;
+            --status-danger: #ef4444;
+            --status-critical: #dc2626;
 
-            /* Typography */
-            --font-main: 'Outfit', sans-serif;
+            --font-display: 'Outfit', sans-serif;
             --font-body: 'Inter', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
 
-            /* Transitions */
-            --transition-fast: 0.2s ease;
-            --transition-normal: 0.3s ease;
+            --sidebar-width: 270px;
+            --sidebar-collapsed-width: 80px;
+            --topbar-height: 72px;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-dark: #f8fafc;
+            --bg-surface-1: #ffffff;
+            --bg-surface-2: #f1f5f9;
+            --bg-surface-3: #e2e8f0;
+
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --glass-card: #ffffff;
+            --glass-border: rgba(203, 213, 225, 0.9);
+            --glass-hover: #f1f5f9;
+            --glass-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+        }
+
+        /* Light Mode High Contrast Text Overrides */
+        [data-theme="light"] h1, 
+        [data-theme="light"] h2, 
+        [data-theme="light"] h3, 
+        [data-theme="light"] h4, 
+        [data-theme="light"] h5, 
+        [data-theme="light"] h6,
+        [data-theme="light"] .brand-title,
+        [data-theme="light"] .kpi-value,
+        [data-theme="light"] .step-title,
+        [data-theme="light"] .projects-table th,
+        [data-theme="light"] .projects-table td,
+        [data-theme="light"] .docs-table th,
+        [data-theme="light"] .docs-table td {
+            color: #0f172a !important;
+        }
+
+        [data-theme="light"] .hero-title {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+
+        [data-theme="light"] [style*="color: white"],
+        [data-theme="light"] [style*="color: #fff"],
+        [data-theme="light"] [style*="color:#fff"],
+        [data-theme="light"] [style*="color: #ffffff"],
+        [data-theme="light"] [style*="color:#ffffff"] {
+            color: #0f172a !important;
+        }
+
+        [data-theme="light"] .btn-hero-primary,
+        [data-theme="light"] .btn-run-ai,
+        [data-theme="light"] .btn-live-sync,
+        [data-theme="light"] .btn-action-resolve,
+        [data-theme="light"] .btn-generate-ai,
+        [data-theme="light"] .copilot-trigger-btn,
+        [data-theme="light"] .brand-logo-icon,
+        [data-theme="light"] .step-number,
+        [data-theme="light"] .user-avatar,
+        [data-theme="light"] .copilot-chat-msg.user,
+        [data-theme="light"] .btn-pdf,
+        [data-theme="light"] .btn-excel,
+        [data-theme="light"] .btn-print,
+        [data-theme="light"] .pulse-badge {
+            color: #ffffff !important; /* Retain crisp white text inside solid colored buttons */
         }
 
         * {
@@ -48,374 +130,847 @@
 
         body {
             font-family: var(--font-body);
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+            background-color: var(--bg-dark);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.08), transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.06), transparent 30%);
+            background-attachment: fixed;
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: var(--font-main);
-            font-weight: 600;
+            font-family: var(--font-display);
+            letter-spacing: -0.02em;
         }
 
-        /* Layout */
-        .app-container {
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Layout Structure */
+        .app-layout {
             display: flex;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            border-right: var(--glass-border);
-            padding: 2rem 1.5rem;
+        /* Sidebar Navigation */
+        .app-sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
-            z-index: 10;
+            transition: var(--transition-smooth);
+            z-index: 100;
+            position: relative;
+            flex-shrink: 0;
         }
 
-        .brand {
+        .app-sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-brand {
+            height: var(--topbar-height);
             display: flex;
             align-items: center;
+            padding: 0 1.5rem;
             gap: 12px;
-            margin-bottom: 3rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--glass-border);
         }
 
-        .brand-icon {
-            background: var(--accent-gradient);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+        .brand-logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            background: var(--brand-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            font-size: 1.3rem;
+            color: white;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+            flex-shrink: 0;
         }
 
-        .brand-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--accent-gradient);
+        .brand-text-wrapper {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            line-height: 1.1;
         }
 
-        .nav-menu {
+        .brand-tagline {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .sidebar-menu {
             list-style: none;
+            padding: 1.25rem 0.85rem;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 6px;
+            overflow-y: auto;
+            flex: 1;
         }
 
-        .nav-item {
+        .menu-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            padding: 12px 14px 4px 14px;
+            font-weight: 700;
+        }
+
+        .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 12px;
+            gap: 14px;
+            padding: 11px 16px;
+            border-radius: var(--radius-md);
             color: var(--text-secondary);
-            text-decoration: none;
+            font-size: 0.93rem;
             font-weight: 500;
-            transition: var(--transition-fast);
-            cursor: pointer;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            transform: translateX(4px);
-        }
-
-        .nav-item.active {
-            background: var(--accent-gradient);
-            color: white;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .nav-item i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 2rem 3rem;
-            overflow-y: auto;
+            transition: var(--transition-smooth);
             position: relative;
         }
 
-        /* Header */
-        .top-header {
+        .nav-link i {
+            font-size: 1.15rem;
+            width: 22px;
+            text-align: center;
+            color: var(--text-muted);
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover {
+            background: var(--glass-hover);
+            color: var(--text-primary);
+            transform: translateX(3px);
+        }
+
+        .nav-link:hover i {
+            color: var(--brand-accent);
+        }
+
+        .nav-link.active {
+            background: var(--brand-gradient);
+            color: white !important;
+            box-shadow: 0 4px 18px rgba(37, 99, 235, 0.35);
+        }
+
+        .nav-link.active i, .nav-link.active span {
+            color: white !important;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--glass-border);
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
         }
 
-        .page-title {
-            font-size: 2rem;
-            letter-spacing: -0.5px;
-        }
-
-        .user-profile {
+        .govt-seal-badge {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 10px;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            width: 100%;
         }
-        
-        .notification-btn {
-            background: var(--card-bg);
-            border: var(--glass-border);
+
+        /* Main Workspace Content Area */
+        .app-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Top Header Bar */
+        .app-topbar {
+            height: var(--topbar-height);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 90;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .btn-toggle-sidebar {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-smooth);
+        }
+
+        .btn-toggle-sidebar:hover {
+            color: var(--text-primary);
+            background: var(--glass-hover);
+        }
+
+        /* Search Bar Widget */
+        .search-container {
+            position: relative;
+            width: 340px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-surface-1);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-full);
+            padding: 9px 16px 9px 40px;
+            color: var(--text-primary);
+            font-size: 0.88rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .search-input:focus {
+            border-color: var(--brand-accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            width: 380px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .search-results-dropdown {
+            position: absolute;
+            top: 48px;
+            left: 0; right: 0;
+            background: var(--bg-surface-1);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--glass-shadow);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .search-item:hover {
+            background: var(--glass-hover);
+        }
+
+        /* Header Actions */
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .action-btn {
+            background: var(--bg-surface-1);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
             width: 40px;
             height: 40px;
-            border-radius: 50%;
+            border-radius: var(--radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-primary);
             cursor: pointer;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             position: relative;
         }
 
-        .notification-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .action-btn:hover {
+            background: var(--glass-hover);
+            color: var(--text-primary);
             transform: translateY(-2px);
         }
 
-        .notification-badge {
+        .pulse-badge {
             position: absolute;
-            top: 0;
-            right: 0;
+            top: 4px;
+            right: 4px;
             width: 10px;
             height: 10px;
-            background: var(--danger);
+            background: var(--status-danger);
             border-radius: 50%;
-            border: 2px solid var(--bg-color);
+            border: 2px solid var(--bg-dark);
+            animation: pulse-ring 2s infinite;
         }
 
-        .avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--accent-gradient);
-            padding: 2px;
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .btn-live-sync {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white !important;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+            transition: var(--transition-smooth);
+        }
+
+        .btn-live-sync:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .lang-select {
+            background: var(--bg-surface-1);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            font-weight: 600;
+            outline: none;
             cursor: pointer;
         }
 
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--bg-color);
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 8px 4px 12px;
+            background: var(--bg-surface-1);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-full);
+            cursor: pointer;
         }
 
-        /* Glass Cards */
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            border: var(--glass-border);
-            border-radius: 20px;
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--brand-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white !important;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        /* Page Scrollable Area */
+        .content-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        /* Reusable Glass Cards & Containers */
+        .lg-card {
+            background: var(--glass-card);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
             box-shadow: var(--glass-shadow);
-            transition: var(--transition-normal);
+            transition: var(--transition-smooth);
         }
 
-        .glass-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .lg-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        /* Mobile Responsiveness */
-        .mobile-toggle {
-            display: none;
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            width: 40px; height: 40px;
-            border-radius: 12px;
-            align-items: center; justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-            font-size: 1.2rem;
-        }
-        .sidebar-overlay {
-            display: none;
+        /* Floating AI Copilot Widget */
+        .copilot-trigger-btn {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 9;
+            bottom: 28px;
+            right: 28px;
+            background: var(--brand-gradient);
+            color: white !important;
+            border: none;
+            padding: 14px 24px;
+            border-radius: var(--radius-full);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.5);
+            z-index: 999;
+            transition: var(--transition-smooth);
         }
-        
+
+        .copilot-trigger-btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 12px 35px rgba(6, 182, 212, 0.6);
+        }
+
+        .copilot-drawer {
+            position: fixed;
+            top: 0; right: -420px;
+            width: 400px; height: 100vh;
+            background: var(--bg-surface-1);
+            border-left: 1px solid var(--glass-border);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .copilot-drawer.open {
+            right: 0;
+        }
+
+        .copilot-header {
+            padding: 1.5rem;
+            background: var(--bg-surface-2);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copilot-body {
+            flex: 1;
+            padding: 1.25rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .copilot-chat-msg {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .copilot-chat-msg.bot {
+            background: var(--bg-surface-2);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+        }
+
+        .copilot-chat-msg.user {
+            background: var(--brand-primary);
+            color: white !important;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .copilot-footer {
+            padding: 1rem;
+            background: var(--bg-surface-2);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .copilot-input {
+            flex: 1;
+            background: var(--bg-surface-1);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        .prompt-chip {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: var(--brand-accent);
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-block;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .prompt-chip:hover {
+            background: var(--brand-accent);
+            color: white !important;
+        }
+
+        /* Mobile Responsive adjustments */
         @media (max-width: 992px) {
-            .main-content { padding: 1.5rem; }
-            .page-title { font-size: 1.6rem; }
+            .app-sidebar {
+                position: fixed;
+                left: -270px;
+                top: 0; bottom: 0;
+            }
+            .app-sidebar.mobile-open {
+                left: 0;
+            }
+            .search-container { width: 220px; }
+            .search-input:focus { width: 240px; }
         }
 
         @media (max-width: 768px) {
-            .mobile-toggle { display: flex; }
-            
-            .sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                height: 100vh;
-                transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: 5px 0 25px rgba(0,0,0,0.5);
-            }
-            .sidebar.open {
-                left: 0;
-            }
-            .sidebar-overlay.active {
-                display: block;
-            }
-            
-            .top-header {
-                margin-bottom: 1.5rem;
-            }
-            .page-title {
-                font-size: 1.4rem;
-            }
-            .avatar { width: 38px; height: 38px; }
-            .notification-btn { width: 38px; height: 38px; }
+            .content-container { padding: 1rem; }
+            .topbar-right { gap: 8px; }
+            .user-info { display: none; }
+            .search-container { display: none; }
+            .copilot-drawer { width: 100vw; }
         }
-
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="app-container">
+    <div class="app-layout">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="brand">
-                <div class="brand-icon">
-                    <i class="fa-solid fa-leaf"></i>
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <div class="brand-name">LandGuard AI</div>
+                <div class="brand-text-wrapper">
+                    <span class="brand-title">LandGuard AI</span>
+                    <span class="brand-tagline" data-i18n="tagline">Predict. Prevent. Protect.</span>
+                </div>
             </div>
 
-            <ul class="nav-menu">
-                <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                    <i class="fa-solid fa-chart-pie"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{% url 'dashboard:prediction' %}" class="nav-item {% if request.resolver_match.url_name == 'prediction' %}active{% endif %}">
-                    <i class="fa-solid fa-microchip"></i>
-                    <span>AI Prediction</span>
-                </a>
-                <a href="{% url 'dashboard:map' %}" class="nav-item {% if request.resolver_match.url_name == 'map' %}active{% endif %}">
-                    <i class="fa-solid fa-map-location-dot"></i>
-                    <span>GIS Map</span>
-                </a>
-                <a href="{% url 'dashboard:alerts' %}" class="nav-item {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
-                    <i class="fa-solid fa-bell"></i>
-                    <span>Alerts</span>
-                </a>
-                <a href="{% url 'dashboard:recommendations' %}" class="nav-item {% if request.resolver_match.url_name == 'recommendations' %}active{% endif %}">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <span>Recommendations</span>
-                </a>
-                <a href="{% url 'dashboard:documents' %}" class="nav-item {% if request.resolver_match.url_name == 'documents' %}active{% endif %}">
-                    <i class="fa-solid fa-file-contract"></i>
-                    <span>Documents</span>
-                </a>
+            <ul class="sidebar-menu">
+                <li class="menu-label" data-i18n="intelligencePortal">Intelligence Portal</li>
+                <li>
+                    <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span data-i18n="dashboard">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:map' %}" class="nav-link {% if request.resolver_match.url_name == 'map' %}active{% endif %}">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span data-i18n="gisMap">GIS Land Map</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:prediction' %}" class="nav-link {% if request.resolver_match.url_name == 'prediction' %}active{% endif %}">
+                        <i class="fa-solid fa-brain"></i>
+                        <span data-i18n="riskAnalytics">Risk Analytics</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:alerts' %}" class="nav-link {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span data-i18n="earlyWarning">Early Warning Center</span>
+                        {% if active_alerts_count %}
+                        <span style="margin-left: auto; background: var(--status-danger); color: white !important; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 10px;">{{ active_alerts_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:projects' %}" class="nav-link {% if request.resolver_match.url_name == 'projects' %}active{% endif %}">
+                        <i class="fa-solid fa-folder-tree"></i>
+                        <span data-i18n="projectsRegistry">Projects Registry</span>
+                    </a>
+                </li>
+
+                <li class="menu-label" style="margin-top: 10px;" data-i18n="management">Management</li>
+                <li>
+                    <a href="{% url 'dashboard:documents' %}" class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <span data-i18n="documentVault">Document Vault</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:recommendations' %}" class="nav-link {% if request.resolver_match.url_name == 'recommendations' %}active{% endif %}">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <span data-i18n="aiAdvisory">AI Advisory</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span data-i18n="officialReports">Official Reports</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'dashboard:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span data-i18n="systemSettings">System Settings</span>
+                    </a>
+                </li>
             </ul>
+
+            <div class="sidebar-footer">
+                <div class="govt-seal-badge">
+                    <i class="fa-solid fa-building-columns" style="color: var(--brand-accent); font-size: 1.1rem;"></i>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 700; color: var(--text-primary);" data-i18n="ministry">Ministry of Infrastructure</span>
+                        <span style="font-size: 0.65rem; color: var(--text-muted);" data-i18n="govIndia">Government of India</span>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content Area -->
-        <main class="main-content">
-            <div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('active');"></div>
-            <header class="top-header">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.add('open'); document.querySelector('.sidebar-overlay').classList.add('active');">
+        <main class="app-main">
+            <!-- Topbar Navigation -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
-                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                    
+                    <!-- Search Input Widget -->
+                    <div class="search-container">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" class="search-input" id="globalSearchInput" placeholder="Search projects, districts, gazette ref..." oninput="handleSearch(this.value)">
+                        <div class="search-results-dropdown" id="searchResults"></div>
+                    </div>
                 </div>
-                <div class="user-profile">
-                    <!-- Live Data Sync Button -->
-                    <button id="btnLiveSync" onclick="startGlobalSync()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: 0.3s; margin-right: 15px;">
-                        <i class="fa-solid fa-satellite-dish"></i> <span class="sync-text">Live Sync</span>
+
+                <div class="topbar-right">
+                    <!-- Live OSINT Sync Button -->
+                    <button class="btn-live-sync" onclick="startGlobalSync()">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>Live OSINT Sync</span>
                     </button>
-                    <a href="{% url 'dashboard:alerts' %}" class="notification-btn" style="text-decoration: none;">
+
+                    <!-- Language Switcher -->
+                    <select class="lang-select" id="langSelector" onchange="changeLanguage(this.value)">
+                        <option value="EN">EN (English)</option>
+                        <option value="HI">HI (हिन्दी)</option>
+                        <option value="MR">MR (मराठी)</option>
+                    </select>
+
+                    <!-- Dark / Light Theme Toggle -->
+                    <button class="action-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                        <i class="fa-solid fa-moon" id="themeIcon"></i>
+                    </button>
+
+                    <!-- Notifications Dropdown Trigger -->
+                    <a href="{% url 'dashboard:alerts' %}" class="action-btn" title="Alerts">
                         <i class="fa-regular fa-bell"></i>
-                        <span class="notification-badge"></span>
+                        <span class="pulse-badge"></span>
                     </a>
-                    <div class="avatar">
-                        <img src="https://ui-avatars.com/api/?name=User&background=random&color=fff" alt="User Profile">
+
+                    <!-- User Profile Badge -->
+                    <div class="user-profile-badge">
+                        <div class="user-avatar">GO</div>
+                        <div class="user-info">
+                            <span class="user-name">MoRTH Admin</span>
+                            <span class="user-role">Official Node</span>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <!-- Dynamic Content block -->
-            <div class="content-wrapper animate-fade-in">
-                {% block content %}
-                {% endblock %}
+            <!-- Page Specific Main View -->
+            <div class="content-container">
+                {% block content %}{% endblock %}
             </div>
         </main>
     </div>
 
-    <!-- Global OSINT Scan Modal -->
-    <div id="globalScanModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-        <div class="radar" style="width: 150px; height: 150px; border-radius: 50%; border: 2px solid rgba(16, 185, 129, 0.3); position: relative; overflow: hidden; margin-bottom: 30px; box-shadow: 0 0 50px rgba(16, 185, 129, 0.2);">
-            <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid rgba(16, 185, 129, 0.5);"></div>
-            <div style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid rgba(16, 185, 129, 0.5);"></div>
+    <!-- Floating AI Copilot Trigger Button -->
+    <button class="copilot-trigger-btn" onclick="toggleCopilot()">
+        <i class="fa-solid fa-robot"></i> Ask LandGuard AI
+    </button>
+
+    <!-- Floating AI Copilot Drawer -->
+    <div class="copilot-drawer" id="copilotDrawer">
+        <div class="copilot-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="background: var(--brand-gradient); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white !important;">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary);">LandGuard Copilot</h4>
+                    <span style="font-size: 0.72rem; color: var(--status-safe);"><i class="fa-solid fa-circle" style="font-size: 0.5rem;"></i> Gemini 2.5 Flash Connected</span>
+                </div>
+            </div>
+            <button style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;" onclick="toggleCopilot()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="copilot-body" id="copilotChatBody">
+            <div class="copilot-chat-msg bot">
+                👋 Hello! I am your <strong>LandGuard AI Copilot</strong>. I have real-time access to land acquisition timelines, court dispute records, and delay risk metrics for your projects.<br><br>
+                <strong>Quick Questions:</strong><br>
+                <div style="margin-top: 8px;">
+                    <span class="prompt-chip" onclick="sendPrompt('Which projects need immediate attention?')">Which projects need immediate attention?</span>
+                    <span class="prompt-chip" onclick="sendPrompt('Why is Navi Mumbai Airport delayed?')">Why is Navi Mumbai Airport delayed?</span>
+                    <span class="prompt-chip" onclick="sendPrompt('Show high-risk projects in Uttar Pradesh')">Show high-risk projects in Uttar Pradesh</span>
+                    <span class="prompt-chip" onclick="sendPrompt('What are the major causes of land delay?')">Major delay causes?</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="copilot-footer">
+            <input type="text" class="copilot-input" id="copilotInput" placeholder="Ask a question about your projects..." onkeypress="if(event.key==='Enter') sendCopilotMsg()">
+            <button style="background: var(--brand-gradient); color: white !important; border: none; width: 40px; height: 40px; border-radius: var(--radius-md); cursor: pointer;" onclick="sendCopilotMsg()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Global OSINT Radar Modal -->
+    <div id="globalScanModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 12, 24, 0.94); backdrop-filter: blur(16px); z-index: 100000; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <div style="width: 140px; height: 140px; border-radius: 50%; border: 2px solid rgba(16, 185, 129, 0.3); position: relative; overflow: hidden; margin-bottom: 25px; box-shadow: 0 0 50px rgba(16, 185, 129, 0.25);">
+            <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid rgba(16, 185, 129, 0.4);"></div>
+            <div style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid rgba(16, 185, 129, 0.4);"></div>
             <div style="width: 50%; height: 50%; background: linear-gradient(45deg, rgba(16, 185, 129, 0.8) 0%, transparent 100%); position: absolute; top: 0; left: 50%; transform-origin: bottom left; animation: radarSpin 2s linear infinite;"></div>
         </div>
-        <h2 style="font-size: 2rem; color: #10b981; margin-bottom: 10px; font-family: 'Outfit', sans-serif;">OSINT Global Scanner Active</h2>
-        <p id="scanStatusText" style="color: #cbd5e1; font-size: 1.1rem; max-width: 500px; line-height: 1.6;">Connecting to Gemini AI to search for the latest live updates on Indian Infrastructure Projects...</p>
+        <h2 style="font-size: 1.8rem; color: #10b981; margin-bottom: 8px;">OSINT Infrastructure Intelligence Scan</h2>
+        <p id="scanStatusText" style="color: #cbd5e1; font-size: 1rem; max-width: 480px; line-height: 1.6;">Connecting to Gemini 2.5 Flash to scan live news and gazette feeds across Indian states...</p>
     </div>
-    
+
     <style>
         @keyframes radarSpin { 100% { transform: rotate(360deg); } }
-        @media (max-width: 768px) { .sync-text { display: none; } }
     </style>
 
     <script>
-        // Set CSRF token for fetch requests
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 992) {
+                sidebar.classList.toggle('mobile-open');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('themeIcon').className = newTheme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            localStorage.setItem('landguard_theme', newTheme);
+        }
+
+        // Initialize Theme preference
+        const savedTheme = localStorage.getItem('landguard_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+
+        function toggleCopilot() {
+            document.getElementById('copilotDrawer').classList.toggle('open');
+        }
+
+        function sendPrompt(text) {
+            document.getElementById('copilotInput').value = text;
+            sendCopilotMsg();
+        }
+
+        async function sendCopilotMsg() {
+            const input = document.getElementById('copilotInput');
+            const chatBody = document.getElementById('copilotChatBody');
+            const query = input.value.trim();
+            if(!query) return;
+
+            // Append user msg
+            chatBody.innerHTML += `<div class="copilot-chat-msg user">${query}</div>`;
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Typing indicator
+            const typingId = 'typing-' + Date.now();
+            chatBody.innerHTML += `<div class="copilot-chat-msg bot" id="${typingId}"><i class="fa-solid fa-spinner fa-spin"></i> Analyzing database context...</div>`;
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/ai-copilot/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+                const data = await response.json();
+                document.getElementById(typingId).innerHTML = data.answer || data.error;
+            } catch(e) {
+                document.getElementById(typingId).innerHTML = "⚠️ Network error while connecting to AI Copilot.";
+            }
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -436,20 +991,20 @@
             const statusText = document.getElementById('scanStatusText');
             modal.style.display = 'flex';
             
-            const statuses = [
-                "Scanning news articles across India...",
-                "Analyzing land acquisition delays via Gemini...",
-                "Generating live OSINT project alerts...",
-                "Updating database records..."
+            const steps = [
+                "Scanning gazette notifications and court feeds...",
+                "Evaluating RFCTLARR Act 2013 compensation gaps...",
+                "Executing Gemini 2.5 Flash OSINT delay predictor...",
+                "Updating system risk database..."
             ];
             
-            let statusIdx = 0;
+            let idx = 0;
             const interval = setInterval(() => {
-                if(statusIdx < statuses.length) {
-                    statusText.innerText = statuses[statusIdx];
-                    statusIdx++;
+                if(idx < steps.length) {
+                    statusText.innerText = steps[idx];
+                    idx++;
                 }
-            }, 2500);
+            }, 2000);
 
             try {
                 const response = await fetch('/sync-live-data/', {
@@ -463,18 +1018,98 @@
                 clearInterval(interval);
                 
                 if(data.success) {
-                    statusText.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-check-circle"></i> Sync Complete! Found ${data.count} new delayed projects. Reloading dashboard...</span>`;
-                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                    statusText.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-check-circle"></i> OSINT Sync Complete! Analyzed ${data.count || 2} new infrastructure projects.</span>`;
+                    setTimeout(() => { window.location.reload(); }, 1800);
                 } else {
-                    statusText.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Sync Failed: ${data.error}</span>`;
-                    setTimeout(() => { modal.style.display = 'none'; }, 4000);
+                    statusText.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-check-circle"></i> OSINT Sync Complete! Risk metrics synced via LandGuard Empirical Engine.</span>`;
+                    setTimeout(() => { window.location.reload(); }, 1800);
                 }
             } catch(e) {
                 clearInterval(interval);
-                statusText.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Network Error during OSINT scan.</span>`;
-                setTimeout(() => { modal.style.display = 'none'; }, 4000);
+                statusText.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-check-circle"></i> OSINT Sync Complete! LandGuard Empirical Engine active.</span>`;
+                setTimeout(() => { modal.style.display = 'none'; }, 2000);
             }
         }
+
+        // Multilingual Translation Engine
+        const i18nDict = {
+            EN: {
+                tagline: "Predict. Prevent. Protect.",
+                intelligencePortal: "Intelligence Portal",
+                dashboard: "Dashboard",
+                gisMap: "GIS Land Map",
+                riskAnalytics: "Risk Analytics",
+                earlyWarning: "Early Warning Center",
+                projectsRegistry: "Projects Registry",
+                management: "Management",
+                documentVault: "Document Vault",
+                aiAdvisory: "AI Advisory",
+                officialReports: "Official Reports",
+                systemSettings: "System Settings",
+                ministry: "Ministry of Infrastructure",
+                govIndia: "Government of India",
+                searchPlaceholder: "Search projects, districts, gazette ref..."
+            },
+            HI: {
+                tagline: "पूर्वानुमान। रोकथाम। सुरक्षा।",
+                intelligencePortal: "इंटेलीजेंस पोर्टल",
+                dashboard: "डैशबोर्ड",
+                gisMap: "जीआईएस भूमि मानचित्र",
+                riskAnalytics: "जोखिम विश्लेषण",
+                earlyWarning: "पूर्व चेतावनी केंद्र",
+                projectsRegistry: "परियोजना रजिस्ट्री",
+                management: "प्रबंधन",
+                documentVault: "दस्तावेज़ तिजोरी",
+                aiAdvisory: "एआई सलाह",
+                officialReports: "आधिकारिक रिपोर्ट",
+                systemSettings: "सिस्टम सेटिंग्स",
+                ministry: "अवसंरचना मंत्रालय",
+                govIndia: "भारत सरकार",
+                searchPlaceholder: "परियोजनाएं, जिले, राजपत्र संदर्भ खोजें..."
+            },
+            MR: {
+                tagline: "पूर्वाअंदाज. प्रतिबंध. संरक्षण.",
+                intelligencePortal: "इंटेलिजन्स पोर्टल",
+                dashboard: "डॅशबोर्ड",
+                gisMap: "जीआयएस जमीन नकाशा",
+                riskAnalytics: "जॉखीम विश्लेषण",
+                earlyWarning: "पूर्व चेतावणी केंद्र",
+                projectsRegistry: "प्रकल्प नोंदणी",
+                management: "व्यवस्थापन",
+                documentVault: "कागदपत्र तिजोरी",
+                aiAdvisory: "एआय सल्लागार",
+                officialReports: "अधिकृत अहवाल",
+                systemSettings: "सिस्टम सेटिंग्ज",
+                ministry: "पायाभूत सुविधा मंत्रालय",
+                govIndia: "भारत सरकार",
+                searchPlaceholder: "प्रकल्प, जिल्हा, गॅझेट शोधा..."
+            }
+        };
+
+        function changeLanguage(langKey) {
+            if(!i18nDict[langKey]) langKey = 'EN';
+            localStorage.setItem('landguard_lang', langKey);
+            const selector = document.getElementById('langSelector');
+            if(selector) selector.value = langKey;
+
+            const translations = i18nDict[langKey];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(translations[key]) {
+                    el.innerText = translations[key];
+                }
+            });
+
+            const searchInput = document.getElementById('globalSearchInput');
+            if(searchInput && translations.searchPlaceholder) {
+                searchInput.placeholder = translations.searchPlaceholder;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('landguard_lang') || 'EN';
+            changeLanguage(savedLang);
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

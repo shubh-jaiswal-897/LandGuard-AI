@@ -1,255 +1,877 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard Overview{% endblock %}
-{% block page_title %}Overview{% endblock %}
+{% block title %}LandGuard AI - Command Center & Early Risk Intelligence{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Dashboard Specific Styles */
-    .dashboard-grid {
+    /* Hero Section Styling */
+    .hero-container {
         display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 24px;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: stretch;
+        margin-bottom: 2.5rem;
+        position: relative;
     }
 
-    /* Stat Cards */
-    .stats-container {
-        grid-column: span 12;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 24px;
-        margin-bottom: 24px;
-    }
-
-    .stat-card {
-        display: flex;
+    .hero-badge {
+        display: inline-flex;
         align-items: center;
-        gap: 20px;
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-    }
-
-    .icon-blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-    .icon-green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-    .icon-orange { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-    .icon-purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
-
-    .stat-info h3 {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-        margin-bottom: 4px;
-    }
-
-    .stat-info p {
-        font-size: 1.8rem;
+        gap: 8px;
+        background: rgba(37, 99, 235, 0.12);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #3b82f6;
+        padding: 6px 14px;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1rem;
         color: var(--text-primary);
     }
 
-    /* Main Chart Area */
-    .chart-section {
-        grid-column: span 8;
-        min-height: 400px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .section-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-    }
-
-    /* Recent Alerts */
-    .alerts-section {
-        grid-column: span 4;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .alert-list {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        margin-top: 20px;
-    }
-
-    .alert-item {
-        display: flex;
-        gap: 16px;
-        padding: 12px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: var(--transition-fast);
-    }
-
-    .alert-item:hover {
-        background: rgba(255, 255, 255, 0.06);
-        transform: translateX(4px);
-    }
-
-    .alert-indicator {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-top: 6px;
-    }
-    .indicator-high { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
-    .indicator-med { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
-    .indicator-low { background: var(--success); box-shadow: 0 0 10px var(--success); }
-
-    .alert-content h4 {
-        font-size: 0.95rem;
-        margin-bottom: 4px;
-    }
-
-    .alert-content p {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-
-    .alert-time {
-        font-size: 0.75rem;
-        color: var(--text-secondary);
-        margin-top: 8px;
+    .hero-tagline-text {
+        color: var(--brand-cyan);
         display: block;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: 4px;
     }
 
-    /* Mock Chart styling */
-    .mock-chart {
-        flex: 1;
-        width: 100%;
-        background: linear-gradient(to top, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
-        border-bottom: 2px solid var(--accent-primary);
-        border-left: 2px solid rgba(255,255,255,0.1);
+    .hero-subtitle {
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        max-width: 540px;
+    }
+
+    .hero-buttons {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-hero-primary {
+        background: var(--brand-gradient);
+        color: white !important;
+        padding: 14px 28px;
+        border-radius: var(--radius-full);
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        transition: var(--transition-smooth);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-hero-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(6, 182, 212, 0.5);
+    }
+
+    .btn-hero-secondary {
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        color: var(--text-primary);
+        padding: 14px 26px;
+        border-radius: var(--radius-full);
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    .btn-hero-secondary:hover {
+        background: var(--glass-hover);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    /* Hero Map Widget & Floating AI Insight Card */
+    .hero-viz-wrapper {
         position: relative;
-        margin-top: 20px;
-        border-radius: 0 0 8px 8px;
+        height: 440px;
+        width: 100%;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
     }
 
-    .chart-line {
-        position: absolute;
-        bottom: 0;
-        left: 0;
+    #heroMap {
         width: 100%;
         height: 100%;
-        background-image: url("data:image/svg+xml,%3Csvg preserveAspectRatio='none' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,100 L0,50 Q25,80 50,40 T100,20 L100,100 Z' fill='rgba(59, 130, 246, 0.2)'/%3E%3Cpath d='M0,50 Q25,80 50,40 T100,20' fill='none' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E");
-        background-size: 100% 100%;
+        background: #080d1a;
+        z-index: 1;
+    }
+
+    .floating-ai-insight {
+        position: absolute;
+        bottom: 14px;
+        left: 14px; right: 14px;
+        background: var(--bg-surface-1);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .insight-pill {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 3px 8px;
+        border-radius: var(--radius-full);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* SIH Presentation Impact Flow Component */
+    .sih-flow-section {
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: var(--glass-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--glass-shadow);
+    }
+
+    .sih-flow-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .sih-flow-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+        position: relative;
+    }
+
+    .sih-flow-step {
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: 18px 14px;
+        text-align: center;
+        position: relative;
+        transition: var(--transition-smooth);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sih-flow-step:hover {
+        transform: translateY(-4px);
+        border-color: var(--brand-accent);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--brand-gradient);
+        color: white !important;
+        font-weight: 800;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    .step-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .step-desc {
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 2.5rem;
+    }
+
+    .kpi-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .kpi-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+
+    .icon-blue { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+    .icon-green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+    .icon-orange { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+    .icon-red { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+
+    .kpi-trend {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: var(--radius-full);
+    }
+
+    .trend-up { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .trend-down { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+    .kpi-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 4px;
+        color: var(--text-primary);
+    }
+
+    .kpi-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    /* Main Command Grid */
+    .command-grid {
+        display: grid;
+        grid-template-columns: 7fr 5fr;
+        gap: 24px;
+        margin-bottom: 2.5rem;
+    }
+
+    /* Radial Circular Risk Score Widget */
+    .radial-score-container {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        padding: 1rem 0;
+    }
+
+    .radial-gauge {
+        position: relative;
+        width: 170px;
+        height: 170px;
+        border-radius: 50%;
+        background: conic-gradient(
+            var(--status-danger) 0% calc({{ featured_pred.delay_probability|default:"72" }} * 1%),
+            rgba(148, 163, 184, 0.2) calc({{ featured_pred.delay_probability|default:"72" }} * 1%) 100%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.25);
+    }
+
+    .radial-gauge-inner {
+        width: 135px;
+        height: 135px;
+        border-radius: 50%;
+        background: var(--bg-surface-1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .score-number {
+        font-size: 2.4rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #ef4444;
+    }
+
+    .score-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+
+    .checklist-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .checklist-item {
+        background: var(--bg-surface-1);
+        border: 1px solid var(--glass-border);
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+    }
+
+    .chk-icon-active { color: var(--status-danger); }
+    .chk-icon-ok { color: var(--status-safe); }
+
+    /* Contribution Bar Breakdown */
+    .xai-bar-group {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 1.25rem;
+    }
+
+    .xai-bar-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .xai-bar-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .xai-progress-track {
+        height: 10px;
+        background: var(--bg-surface-3);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .xai-progress-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 1s ease-out;
     }
 
     @media (max-width: 992px) {
-        .chart-section, .alerts-section {
-            grid-column: span 12;
-        }
-        .chart-section { min-height: 300px; }
+        .hero-container { grid-template-columns: 1fr; }
+        .command-grid { grid-template-columns: 1fr; }
+        .sih-flow-grid { grid-template-columns: repeat(3, 1fr); }
     }
-    
-    @media (max-width: 768px) {
-        .dashboard-grid, .stats-container { gap: 16px; margin-bottom: 16px; }
-        .stat-info p { font-size: 1.5rem; }
+
+    @media (max-width: 600px) {
+        .sih-flow-grid { grid-template-columns: repeat(2, 1fr); }
+        .radial-score-container { flex-direction: column; text-align: center; }
+        .checklist-grid { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Stats Row -->
-<div class="stats-container">
-    <div class="glass-card stat-card" style="animation-delay: 0.1s;">
-        <div class="stat-icon icon-blue">
-            <i class="fa-solid fa-map"></i>
+<!-- Hero Section -->
+<section class="hero-container">
+    <div>
+        <div class="hero-badge">
+            <i class="fa-solid fa-bolt-lightning"></i> SIH AI Early Warning System
         </div>
-        <div class="stat-info">
-            <h3>Total Land Area</h3>
-            <p>{{ total_area }} <span style="font-size: 1rem; color: var(--text-secondary);">Hectares</span></p>
-        </div>
-    </div>
-
-    <div class="glass-card stat-card" style="animation-delay: 0.2s;">
-        <div class="stat-icon icon-green">
-            <i class="fa-solid fa-check-circle"></i>
-        </div>
-        <div class="stat-info">
-            <h3>Acquired Land</h3>
-            <p>{{ acquired_area }} <span style="font-size: 1rem; color: var(--text-secondary);">Hectares</span></p>
-        </div>
-    </div>
-
-    <div class="glass-card stat-card" style="animation-delay: 0.3s;">
-        <div class="stat-icon icon-orange">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div class="stat-info">
-            <h3>Active Alerts</h3>
-            <p>{{ active_alerts_count }}</p>
-        </div>
-    </div>
-
-    <div class="glass-card stat-card" style="animation-delay: 0.4s;">
-        <div class="stat-icon icon-purple">
-            <i class="fa-solid fa-bullseye"></i>
-        </div>
-        <div class="stat-info">
-            <h3>On-Time Probability</h3>
-            <p>{{ on_time_probability }}%</p>
-        </div>
-    </div>
-</div>
-
-<div class="dashboard-grid">
-    <!-- Chart Section -->
-    <div class="glass-card chart-section" style="animation-delay: 0.5s;">
-        <div class="section-header">
-            <h2 class="section-title">Land Acquisition Progress</h2>
-            <button style="background: rgba(255,255,255,0.1); border:none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
-                <i class="fa-solid fa-download"></i> Export
+        <h1 class="hero-title">
+            LANDGUARD AI
+            <span class="hero-tagline-text">Predict. Prevent. Protect.</span>
+        </h1>
+        <p class="hero-subtitle">
+            AI-powered early detection and risk intelligence platform for faster, transparent, and bottleneck-free infrastructure land acquisition across India.
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'dashboard:map' %}" class="btn-hero-primary">
+                <i class="fa-solid fa-compass"></i> Explore GIS Map
+            </a>
+            <button class="btn-hero-secondary" onclick="openProjectModal('{{ featured_project.project_id|default:"PROJ-IN-001" }}')">
+                <i class="fa-solid fa-microchip"></i> Analyze Project
             </button>
         </div>
-        <div class="mock-chart">
-            <div class="chart-line"></div>
+    </div>
+
+    <!-- Hero Interactive Map Widget -->
+    <div class="hero-viz-wrapper">
+        <div id="heroMap"></div>
+        
+        <!-- Floating Live AI Insight Panel -->
+        <div class="floating-ai-insight">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: rgba(239, 68, 68, 0.15); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.1rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Top Risk Insight</div>
+                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary);">{{ featured_project.project_name|default:"Navi Mumbai Airport" }}</div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <span class="insight-pill">Risk: {{ featured_pred.delay_probability|default:"78.0" }}%</span>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Compensation Pending</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SIH Presentation Impact Flow Section (Requirement #19) -->
+<section class="sih-flow-section">
+    <div class="sih-flow-header">
+        <h2 style="font-size: 1.6rem; color: var(--text-primary); margin-bottom: 6px;">End-to-End Land Acquisition Delay Mitigation Architecture</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Empirical Intelligence Pipeline designed for Ministry & State District Collectors</p>
+    </div>
+
+    <div class="sih-flow-grid">
+        <div class="sih-flow-step">
+            <div class="step-number">1</div>
+            <div class="step-title">DATA</div>
+            <div class="step-desc">Gazette Sec 11/19, Cadastral Maps, Court Orders & OSINT Feeds</div>
+        </div>
+        <div class="sih-flow-step">
+            <div class="step-number">2</div>
+            <div class="step-title">AI ANALYSIS</div>
+            <div class="step-desc">Gemini 2.5 Flash & RFCTLARR Empirical Rule Engine</div>
+        </div>
+        <div class="sih-flow-step">
+            <div class="step-number">3</div>
+            <div class="step-title">RISK PREDICTION</div>
+            <div class="step-desc">Explainable AI (XAI) feature importance & delay score (0-100)</div>
+        </div>
+        <div class="sih-flow-step">
+            <div class="step-number">4</div>
+            <div class="step-title">EARLY WARNING</div>
+            <div class="step-desc">Automated bottleneck alerts dispatched to District Collectors</div>
+        </div>
+        <div class="sih-flow-step">
+            <div class="step-number">5</div>
+            <div class="step-title">ACTION</div>
+            <div class="step-desc">Land Tribunal Fast-Track & Direct Benefit Compensation</div>
+        </div>
+        <div class="sih-flow-step">
+            <div class="step-number" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">6</div>
+            <div class="step-title" style="color: #10b981;">REDUCED DELAY</div>
+            <div class="step-desc">Average 42 Days saved per acquisition phase</div>
+        </div>
+    </div>
+</section>
+
+<!-- Top KPI Cards -->
+<section class="kpi-grid">
+    <div class="lg-card kpi-card">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-blue"><i class="fa-solid fa-cubes"></i></div>
+            <span class="kpi-trend trend-up">↑ 12.5%</span>
+        </div>
+        <div class="kpi-value">{{ total_projects }}</div>
+        <div class="kpi-label">Total Infrastructure Projects</div>
+    </div>
+
+    <div class="lg-card kpi-card">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-green"><i class="fa-solid fa-draw-polygon"></i></div>
+            <span class="kpi-trend trend-up">{{ acquisition_progress }}%</span>
+        </div>
+        <div class="kpi-value">{{ acquired_area }} <span style="font-size: 1rem; font-weight: normal; color: var(--text-muted);">ha</span></div>
+        <div class="kpi-label">Acquired Land (out of {{ total_area }} ha)</div>
+    </div>
+
+    <div class="lg-card kpi-card">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <span class="kpi-trend trend-down">Critical</span>
+        </div>
+        <div class="kpi-value" style="color: #ef4444;">{{ high_risk_count }}</div>
+        <div class="kpi-label">High-Risk Delay Projects</div>
+    </div>
+
+    <div class="lg-card kpi-card">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-orange"><i class="fa-solid fa-hourglass-half"></i></div>
+            <span class="kpi-trend trend-down">{{ delayed_projects }} Delayed</span>
+        </div>
+        <div class="kpi-value">{{ active_alerts_count }}</div>
+        <div class="kpi-label">Active System Alerts</div>
+    </div>
+
+    <div class="lg-card kpi-card">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-blue"><i class="fa-solid fa-shield-check"></i></div>
+            <span class="kpi-trend trend-up">System Score</span>
+        </div>
+        <div class="kpi-value" style="color: var(--brand-cyan);">{{ on_time_probability }}%</div>
+        <div class="kpi-label">On-Time Completion Probability</div>
+    </div>
+</section>
+
+<!-- Interactive Acquisition Progress & Monthly Trend Graph -->
+<section class="lg-card" style="margin-bottom: 2.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h3 style="font-size: 1.25rem; color: var(--text-primary);">Land Acquisition Progress & Monthly Target Trend</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Real-time tracking of acquired hectares vs targeted milestone timelines across Indian Infrastructure Sectors</span>
+        </div>
+        <a href="{% url 'dashboard:reports' %}" style="background: var(--bg-surface-1); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 8px 16px; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-download"></i> Export Analytics Report
+        </a>
+    </div>
+    <div style="position: relative; height: 380px; min-height: 360px; width: 100%; padding: 5px 0;">
+        <canvas id="dashboardTrendChart"></canvas>
+    </div>
+</section>
+
+<!-- Central Command Grid: AI Risk Score Visualization & XAI Explanation -->
+<section class="command-grid">
+    <!-- Left Column: Circular Risk Score Visualization (Section 6) -->
+    <div class="lg-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+                <h3 style="font-size: 1.25rem; color: var(--text-primary);">PROJECT RISK SCORE</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Target Focus: {{ featured_project.project_name|default:"Navi Mumbai Airport" }}</span>
+            </div>
+            <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 6px 14px; border-radius: var(--radius-full); font-weight: 700; font-size: 0.85rem; border: 1px solid rgba(239, 68, 68, 0.3);">
+                CRITICAL RISK
+            </span>
+        </div>
+
+        <div class="radial-score-container">
+            <!-- Central Circular Radial Visualization -->
+            <div class="radial-gauge">
+                <div class="radial-gauge-inner">
+                    <span class="score-number">{{ featured_pred.delay_probability|default:"72"|stringformat:".0f" }}</span>
+                    <span class="score-label">Risk / 100</span>
+                </div>
+            </div>
+
+            <!-- Risk Checklist Breakdown -->
+            <div style="flex: 1;">
+                <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Why is this project at risk?</h4>
+                <div class="checklist-grid">
+                    <div class="checklist-item">
+                        <i class="fa-solid fa-circle-exclamation chk-icon-active"></i>
+                        <span>Compensation Pending</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fa-solid fa-circle-exclamation chk-icon-active"></i>
+                        <span>Approval Delay</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fa-solid fa-circle-exclamation chk-icon-active"></i>
+                        <span>Legal Title Dispute</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fa-solid fa-circle-check chk-icon-ok"></i>
+                        <span>Possession Verified</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px; background: var(--bg-surface-1); border: 1px solid var(--glass-border); padding: 12px 16px; border-radius: var(--radius-md); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+            <span>Scale: 0–30 Low | 31–60 Medium | 61–80 High | 81–100 Critical</span>
+            <span>Model: Gemini 2.5 + Empirical XAI</span>
         </div>
     </div>
 
-    <!-- Alerts Section -->
-    <div class="glass-card alerts-section" style="animation-delay: 0.6s;">
-        <div class="section-header">
-            <h2 class="section-title">Recent Alerts</h2>
-            <a href="#" style="color: var(--accent-primary); text-decoration: none; font-size: 0.9rem;">View All</a>
+    <!-- Right Column: Unique AI Explanation (XAI Section 7) -->
+    <div class="lg-card">
+        <h3 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 6px;">WHY THIS PROJECT MAY BE DELAYED</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; background: rgba(59, 130, 246, 0.08); padding: 12px 14px; border-radius: var(--radius-md); border-left: 3px solid var(--brand-accent);">
+            <i class="fa-solid fa-brain" style="color: var(--brand-accent); margin-right: 6px;"></i>
+            <strong>AI Analysis:</strong> Compensation status under RFCTLARR Act and unresolved legal cases are currently contributing most to the predicted delay.
+        </p>
+
+        <!-- Contribution Bars -->
+        <div class="xai-bar-group">
+            <div class="xai-bar-item">
+                <div class="xai-bar-header">
+                    <span>Compensation Status</span>
+                    <span style="color: #ef4444; font-weight: 700;">38%</span>
+                </div>
+                <div class="xai-progress-track">
+                    <div class="xai-progress-fill" style="width: 38%; background: #ef4444;"></div>
+                </div>
+            </div>
+
+            <div class="xai-bar-item">
+                <div class="xai-bar-header">
+                    <span>Legal Disputes & Litigation</span>
+                    <span style="color: #f97316; font-weight: 700;">27%</span>
+                </div>
+                <div class="xai-progress-track">
+                    <div class="xai-progress-fill" style="width: 27%; background: #f97316;"></div>
+                </div>
+            </div>
+
+            <div class="xai-bar-item">
+                <div class="xai-bar-header">
+                    <span>Approval & Regulatory NOC</span>
+                    <span style="color: #f59e0b; font-weight: 700;">19%</span>
+                </div>
+                <div class="xai-progress-track">
+                    <div class="xai-progress-fill" style="width: 19%; background: #f59e0b;"></div>
+                </div>
+            </div>
+
+            <div class="xai-bar-item">
+                <div class="xai-bar-header">
+                    <span>Physical Possession Handover</span>
+                    <span style="color: #3b82f6; font-weight: 700;">11%</span>
+                </div>
+                <div class="xai-progress-track">
+                    <div class="xai-progress-fill" style="width: 11%; background: #3b82f6;"></div>
+                </div>
+            </div>
+
+            <div class="xai-bar-item">
+                <div class="xai-bar-header">
+                    <span>Other Secondary Factors</span>
+                    <span style="color: #10b981; font-weight: 700;">5%</span>
+                </div>
+                <div class="xai-progress-track">
+                    <div class="xai-progress-fill" style="width: 5%; background: #10b981;"></div>
+                </div>
+            </div>
         </div>
-        
-        <div class="alert-list">
-            {% for alert in recent_alerts %}
-            <div class="alert-item">
-                <div class="alert-indicator {% if alert.severity == 'CRITICAL' %}indicator-high{% elif alert.severity == 'WARNING' %}indicator-med{% else %}indicator-low{% endif %}"></div>
-                <div class="alert-content">
-                    <h4>{{ alert.alert_type }}</h4>
-                    <p>{{ alert.message }} ({{ alert.project.project_name }})</p>
-                    <span class="alert-time">{{ alert.created_at|timesince }} ago</span>
-                </div>
-            </div>
-            {% empty %}
-            <div class="alert-item">
-                <div class="alert-content">
-                    <p>No active alerts at the moment.</p>
-                </div>
-            </div>
-            {% endfor %}
+    </div>
+</section>
+
+<!-- Project Detail Modal Drawer -->
+<div id="projectDetailModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 12, 24, 0.85); backdrop-filter: blur(12px); z-index: 100000; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="background: var(--bg-surface-1); border: 1px solid var(--glass-border); width: 100%; max-width: 750px; border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--glass-shadow); position: relative;">
+        <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;" onclick="closeProjectModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div id="modalContentLoading" style="text-align: center; padding: 3rem 0;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; color: var(--brand-accent); margin-bottom: 1rem;"></i>
+            <p style="color: var(--text-secondary);">Loading Project Intelligence Profile...</p>
+        </div>
+
+        <div id="modalContentBody" style="display: none;">
+            <!-- Content injected via JS -->
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize Dashboard Interactive Acquisition Trend Chart
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const textColor = isLight ? '#0f172a' : '#cbd5e1';
+    const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+
+    const ctxTrend = document.getElementById('dashboardTrendChart').getContext('2d');
+    
+    // Gradient backgrounds for area chart
+    const gradAcquired = ctxTrend.createLinearGradient(0, 0, 0, 300);
+    gradAcquired.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+    gradAcquired.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    const gradTarget = ctxTrend.createLinearGradient(0, 0, 0, 300);
+    gradTarget.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+    gradTarget.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: ['Apr 2026', 'May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026 (Current)'],
+            datasets: [
+                {
+                    label: 'Acquired Land Area (Hectares)',
+                    data: [42500, 48900, 53200, 58100, 61400, {{ acquired_area }}],
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradAcquired,
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#3b82f6',
+                    pointRadius: 5
+                },
+                {
+                    label: 'Target Acquisition Schedule (Hectares)',
+                    data: [45000, 51000, 57000, 62000, 66000, {{ total_area }}],
+                    borderColor: '#10b981',
+                    borderDash: [6, 6],
+                    backgroundColor: gradTarget,
+                    fill: false,
+                    tension: 0.35,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#10b981',
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 10, bottom: 10, left: 10, right: 15 }
+            },
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                y: { ticks: { color: textColor }, grid: { color: gridColor }, title: { display: true, text: 'Hectares (ha)', color: textColor } }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { color: textColor, font: { weight: '600' } } }
+            }
+        }
+    });
+
+    // Initialize Mini Hero Map
+    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 4);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
+
+    // Guarantee Leaflet fills container without truncation
+    setTimeout(() => { map.invalidateSize(); }, 300);
+
+    const projectsData = {{ projects_map_json|safe }};
+    
+    projectsData.forEach(p => {
+        const color = p.risk_level === 'CRITICAL' ? '#ef4444' : (p.risk_level === 'HIGH' ? '#f97316' : '#10b981');
+        const marker = L.circleMarker([p.lat, p.lng], {
+            radius: 8,
+            fillColor: color,
+            color: '#ffffff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
+
+        marker.bindTooltip(`<b>${p.name}</b><br>${p.district}, ${p.state}<br>Risk: ${p.delay_prob}%`);
+        marker.on('click', () => { openProjectModal(p.id); });
+    });
+
+    async function openProjectModal(projectId) {
+        const modal = document.getElementById('projectDetailModal');
+        const loading = document.getElementById('modalContentLoading');
+        const body = document.getElementById('modalContentBody');
+        
+        modal.style.display = 'flex';
+        loading.style.display = 'block';
+        body.style.display = 'none';
+
+        try {
+            const response = await fetch(`/projects/${projectId}/detail/`);
+            const data = await response.json();
+            
+            if(data.success) {
+                const p = data.project;
+                body.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--brand-cyan); text-transform: uppercase;">PROJECT PROFILE • ${p.id}</span>
+                            <h2 style="font-size: 1.6rem; color: var(--text-primary); margin-top: 4px;">${p.name}</h2>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;"><i class="fa-solid fa-location-dot"></i> ${p.district}, ${p.state} | Type: ${p.type}</p>
+                        </div>
+                        <span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; border: 1px solid rgba(239,68,68,0.3);">
+                            ${p.risk_level} (${p.delay_prob}% DELAY RISK)
+                        </span>
+                    </div>
+
+                    <!-- Acquisition Timeline Stepper (Requirement #9) -->
+                    <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">ACQUISITION TIMELINE STAGE STATUS</h4>
+                    <div style="display: flex; justify-content: space-between; position: relative; margin-bottom: 2rem; background: var(--bg-surface-2); padding: 16px; border-radius: var(--radius-md);">
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; color: white !important; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto;">✓</div>
+                            <span style="font-size: 0.75rem; color: var(--text-primary);">Notification</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; color: white !important; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto;">✓</div>
+                            <span style="font-size: 0.75rem; color: var(--text-primary);">Survey</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #ef4444; color: white !important; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto;">!</div>
+                            <span style="font-size: 0.75rem; color: #ef4444; font-weight: bold;">Compensation</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #f59e0b; color: white !important; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto;">-</div>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Approval</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-surface-3); color: var(--text-muted); font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto;">-</div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Possession</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-surface-3); color: var(--text-muted); font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto;">-</div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Completion</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem;">
+                        <div style="background: var(--bg-surface-2); padding: 14px; border-radius: var(--radius-md);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Land Acquisition Progress</span>
+                            <div style="font-size: 1.4rem; font-weight: bold; color: var(--text-primary); margin: 4px 0;">${p.acquired_area} / ${p.total_area} ha</div>
+                            <div style="background: var(--bg-surface-3); height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div style="width: ${p.progress_pct}%; background: var(--brand-accent); height: 100%;"></div>
+                            </div>
+                        </div>
+                        <div style="background: var(--bg-surface-2); padding: 14px; border-radius: var(--radius-md);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Primary Bottleneck Cause</span>
+                            <div style="font-size: 1rem; font-weight: bold; color: #ef4444; margin-top: 4px;">
+                                ${p.compensation_status !== 'Completed' ? 'Pending Compensation Award' : 'Court Litigation Stay'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <a href="{% url 'dashboard:alerts' %}" class="btn-hero-primary" style="padding: 10px 20px; font-size: 0.88rem;">
+                            <i class="fa-solid fa-gavel"></i> Dispatch Tribunal Action
+                        </a>
+                    </div>
+                `;
+                loading.style.display = 'none';
+                body.style.display = 'block';
+            }
+        } catch(e) {
+            loading.innerHTML = `<p style="color: #ef4444;">Failed to load project profile.</p>`;
+        }
+    }
+
+    function closeProjectModal() {
+        document.getElementById('projectDetailModal').style.display = 'none';
+    }
+</script>
 {% endblock %}
