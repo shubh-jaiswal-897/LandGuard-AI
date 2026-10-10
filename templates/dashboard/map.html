@@ -181,11 +181,14 @@
     const gisMapElement = document.getElementById('gisMap');
     const map = L.map('gisMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4.5);
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        subdomains: ['a', 'b', 'c'],
+    const primaryGisTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: 'Esri World Street Map'
     }).addTo(map);
+
+    primaryGisTiles.on('tileerror', function(error, tile) {
+        tile.src = 'https://tile.openstreetmap.de/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
+    });
 
     const invalidateGisMap = () => {
         if (map) { map.invalidateSize(true); }

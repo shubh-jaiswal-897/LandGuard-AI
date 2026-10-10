@@ -760,15 +760,18 @@
         }
     });
 
-    // Initialize Mini Hero Map - Full India View (No API Key Required)
+    // Initialize Mini Hero Map - Full India Street & Geographic View (No API Key, No 403 Error)
     const heroMapElement = document.getElementById('heroMap');
-    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4);
+    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4.2);
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        subdomains: ['a', 'b', 'c'],
+    const primaryTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: 'Esri World Street Map'
     }).addTo(map);
+
+    primaryTiles.on('tileerror', function(error, tile) {
+        tile.src = 'https://tile.openstreetmap.de/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
+    });
 
     const invalidateHeroMap = () => {
         if (map) { map.invalidateSize(true); }
