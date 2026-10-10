@@ -179,17 +179,13 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const gisMapElement = document.getElementById('gisMap');
-    const map = L.map('gisMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 5);
+    const map = L.map('gisMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4.5);
     
-    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-
-    tileLayer.on('tileerror', function(error, tile) {
-        tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
-    });
 
     const invalidateGisMap = () => {
         if (map) { map.invalidateSize(true); }

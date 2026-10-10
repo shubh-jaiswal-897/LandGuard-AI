@@ -760,20 +760,15 @@
         }
     });
 
-    // Initialize Mini Hero Map with zero black patches
+    // Initialize Mini Hero Map - Full India View (No API Key Required)
     const heroMapElement = document.getElementById('heroMap');
-    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 4.5);
+    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4);
     
-    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-    const tileLayer = L.tileLayer(tileUrl, {
-        subdomains: 'abcd',
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-
-    tileLayer.on('tileerror', function(error, tile) {
-        tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
-    });
 
     const invalidateHeroMap = () => {
         if (map) { map.invalidateSize(true); }
