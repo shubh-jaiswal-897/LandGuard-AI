@@ -54,7 +54,7 @@
     #gisMap {
         height: 100%;
         width: 100%;
-        background: #080d1a;
+        background: var(--bg-surface-1);
     }
 
     .map-legend {
@@ -178,11 +178,32 @@
 {% block extra_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    const gisMapElement = document.getElementById('gisMap');
     const map = L.map('gisMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 5);
     
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19
+    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
+
+    tileLayer.on('tileerror', function(error, tile) {
+        tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
+    });
+
+    const invalidateGisMap = () => {
+        if (map) { map.invalidateSize(true); }
+    };
+
+    window.addEventListener('load', invalidateGisMap);
+    window.addEventListener('resize', invalidateGisMap);
+    setTimeout(invalidateGisMap, 100);
+    setTimeout(invalidateGisMap, 400);
+    setTimeout(invalidateGisMap, 1000);
+
+    if (window.ResizeObserver && gisMapElement) {
+        new ResizeObserver(() => invalidateGisMap()).observe(gisMapElement);
+    }
 
     L.control.zoom({ position: 'topleft' }).addTo(map);
 

@@ -117,7 +117,7 @@
     #heroMap {
         width: 100%;
         height: 100%;
-        background: #080d1a;
+        background: var(--bg-surface-1);
         z-index: 1;
     }
 
@@ -760,12 +760,34 @@
         }
     });
 
-    // Initialize Mini Hero Map
-    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 4);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
+    // Initialize Mini Hero Map with zero black patches
+    const heroMapElement = document.getElementById('heroMap');
+    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([20.5937, 78.9629], 4.5);
+    
+    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const tileLayer = L.tileLayer(tileUrl, {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(map);
 
-    // Guarantee Leaflet fills container without truncation
-    setTimeout(() => { map.invalidateSize(); }, 300);
+    tileLayer.on('tileerror', function(error, tile) {
+        tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
+    });
+
+    const invalidateHeroMap = () => {
+        if (map) { map.invalidateSize(true); }
+    };
+
+    window.addEventListener('load', invalidateHeroMap);
+    window.addEventListener('resize', invalidateHeroMap);
+    setTimeout(invalidateHeroMap, 100);
+    setTimeout(invalidateHeroMap, 400);
+    setTimeout(invalidateHeroMap, 1000);
+
+    if (window.ResizeObserver && heroMapElement) {
+        new ResizeObserver(() => invalidateHeroMap()).observe(heroMapElement);
+    }
 
     const projectsData = {{ projects_map_json|safe }};
     
