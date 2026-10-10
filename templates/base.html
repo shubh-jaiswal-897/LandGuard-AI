@@ -178,6 +178,85 @@
             width: var(--sidebar-collapsed-width);
         }
 
+        .app-sidebar.collapsed .sidebar-brand {
+            padding: 0;
+            justify-content: center;
+        }
+
+        .app-sidebar.collapsed .brand-text-wrapper,
+        .app-sidebar.collapsed .menu-label,
+        .app-sidebar.collapsed .nav-link span:not(.badge-count),
+        .app-sidebar.collapsed .govt-seal-badge div {
+            display: none !important;
+        }
+
+        .app-sidebar.collapsed .sidebar-menu {
+            padding: 1.25rem 0.5rem;
+            align-items: center;
+        }
+
+        .app-sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 12px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto;
+            border-radius: var(--radius-md);
+            gap: 0;
+            position: relative;
+        }
+
+        .app-sidebar.collapsed .nav-link i {
+            font-size: 1.25rem;
+            width: auto;
+            margin: 0;
+        }
+
+        .app-sidebar.collapsed .sidebar-footer {
+            padding: 0.85rem 0.5rem;
+            justify-content: center;
+        }
+
+        .app-sidebar.collapsed .govt-seal-badge {
+            justify-content: center;
+            padding: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+        }
+
+        .app-sidebar.collapsed .govt-seal-badge i {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        /* Tooltips when sidebar is collapsed */
+        .app-sidebar.collapsed .nav-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%) translateX(6px);
+            background: rgba(15, 23, 42, 0.95);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border);
+            z-index: 1000;
+        }
+
+        .app-sidebar.collapsed .nav-link:hover::after {
+            opacity: 1;
+            transform: translateY(-50%) translateX(12px);
+        }
+
         .sidebar-brand {
             height: var(--topbar-height);
             display: flex;
@@ -716,34 +795,34 @@
             <ul class="sidebar-menu">
                 <li class="menu-label" data-i18n="intelligencePortal">Intelligence Portal</li>
                 <li>
-                    <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" data-tooltip="Dashboard">
                         <i class="fa-solid fa-chart-pie"></i>
                         <span data-i18n="dashboard">Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:map' %}" class="nav-link {% if request.resolver_match.url_name == 'map' %}active{% endif %}">
+                    <a href="{% url 'dashboard:map' %}" class="nav-link {% if request.resolver_match.url_name == 'map' %}active{% endif %}" data-tooltip="GIS Land Map">
                         <i class="fa-solid fa-map-location-dot"></i>
                         <span data-i18n="gisMap">GIS Land Map</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:prediction' %}" class="nav-link {% if request.resolver_match.url_name == 'prediction' %}active{% endif %}">
+                    <a href="{% url 'dashboard:prediction' %}" class="nav-link {% if request.resolver_match.url_name == 'prediction' %}active{% endif %}" data-tooltip="Risk Analytics">
                         <i class="fa-solid fa-brain"></i>
                         <span data-i18n="riskAnalytics">Risk Analytics</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:alerts' %}" class="nav-link {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
+                    <a href="{% url 'dashboard:alerts' %}" class="nav-link {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}" data-tooltip="Early Warning Center">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span data-i18n="earlyWarning">Early Warning Center</span>
                         {% if active_alerts_count %}
-                        <span style="margin-left: auto; background: var(--status-danger); color: white !important; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 10px;">{{ active_alerts_count }}</span>
+                        <span class="badge-count" style="margin-left: auto; background: var(--status-danger); color: white !important; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 10px;">{{ active_alerts_count }}</span>
                         {% endif %}
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:projects' %}" class="nav-link {% if request.resolver_match.url_name == 'projects' %}active{% endif %}">
+                    <a href="{% url 'dashboard:projects' %}" class="nav-link {% if request.resolver_match.url_name == 'projects' %}active{% endif %}" data-tooltip="Projects Registry">
                         <i class="fa-solid fa-folder-tree"></i>
                         <span data-i18n="projectsRegistry">Projects Registry</span>
                     </a>
@@ -751,25 +830,25 @@
 
                 <li class="menu-label" style="margin-top: 10px;" data-i18n="management">Management</li>
                 <li>
-                    <a href="{% url 'dashboard:documents' %}" class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}">
+                    <a href="{% url 'dashboard:documents' %}" class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" data-tooltip="Document Vault">
                         <i class="fa-solid fa-file-contract"></i>
                         <span data-i18n="documentVault">Document Vault</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:recommendations' %}" class="nav-link {% if request.resolver_match.url_name == 'recommendations' %}active{% endif %}">
+                    <a href="{% url 'dashboard:recommendations' %}" class="nav-link {% if request.resolver_match.url_name == 'recommendations' %}active{% endif %}" data-tooltip="AI Advisory">
                         <i class="fa-solid fa-lightbulb"></i>
                         <span data-i18n="aiAdvisory">AI Advisory</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                    <a href="{% url 'dashboard:reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" data-tooltip="Official Reports">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span data-i18n="officialReports">Official Reports</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'dashboard:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                    <a href="{% url 'dashboard:settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" data-tooltip="System Settings">
                         <i class="fa-solid fa-sliders"></i>
                         <span data-i18n="systemSettings">System Settings</span>
                     </a>
@@ -829,14 +908,7 @@
                         <span class="pulse-badge"></span>
                     </a>
 
-                    <!-- User Profile Badge -->
-                    <div class="user-profile-badge">
-                        <div class="user-avatar">GO</div>
-                        <div class="user-info">
-                            <span class="user-name">MoRTH Admin</span>
-                            <span class="user-role">Official Node</span>
-                        </div>
-                    </div>
+
                 </div>
             </header>
 
@@ -913,6 +985,10 @@
             } else {
                 sidebar.classList.toggle('collapsed');
             }
+            // Trigger window resize event so map and charts recalculate sizes seamlessly
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 300);
         }
 
         function toggleTheme() {

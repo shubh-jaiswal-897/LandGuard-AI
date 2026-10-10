@@ -3,6 +3,7 @@
 {% block title %}LandGuard AI - Command Center & Early Risk Intelligence{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     /* Hero Section Styling */
     .hero-container {
@@ -111,14 +112,112 @@
         border-radius: var(--radius-lg);
         overflow: hidden;
         border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        background: #0b0f19;
     }
 
     #heroMap {
         width: 100%;
         height: 100%;
-        background: var(--bg-surface-1);
+        background: #0b0f19;
         z-index: 1;
+    }
+
+    /* Interactive Overlay Controls on Dashboard Map */
+    .hero-map-toolbar {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        padding: 6px 12px;
+        border-radius: var(--radius-full);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .hero-map-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .hero-map-btn:hover, .hero-map-btn.active {
+        background: var(--brand-accent);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .hero-map-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 500;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        padding: 6px 14px;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--brand-cyan);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .radar-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 10px #10b981;
+        animation: radar-blink 1.5s infinite alternate;
+    }
+
+    @keyframes radar-blink {
+        0% { opacity: 0.3; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Radar Scanner Line Overlay Effect */
+    .radar-scanner-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+        z-index: 400;
+        overflow: hidden;
+    }
+
+    .radar-sweep-line {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        top: -50%; left: -50%;
+        background: conic-gradient(from 0deg, rgba(6, 182, 212, 0.12) 0deg, transparent 40deg);
+        animation: radar-rotate 12s linear infinite;
+        transform-origin: center center;
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    @keyframes radar-rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
 
     @keyframes pulse-ring {
@@ -130,28 +229,40 @@
         position: absolute;
         bottom: 14px;
         left: 14px; right: 14px;
-        background: var(--bg-surface-1);
+        background: rgba(15, 23, 42, 0.92);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(239, 68, 68, 0.4);
         border-radius: var(--radius-md);
-        padding: 12px 16px;
+        padding: 12px 18px;
         z-index: 500;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: var(--glass-shadow);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     .insight-pill {
         background: rgba(239, 68, 68, 0.15);
         color: #ef4444;
         border: 1px solid rgba(239, 68, 68, 0.3);
-        padding: 3px 8px;
+        padding: 4px 10px;
         border-radius: var(--radius-full);
-        font-size: 0.72rem;
+        font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
+    }
+
+    .custom-hero-leaflet-popup .leaflet-popup-content-wrapper {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: var(--radius-md) !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .custom-hero-leaflet-popup .leaflet-popup-tip {
+        background: #0f172a !important;
     }
 
     /* SIH Presentation Impact Flow Component */
@@ -435,26 +546,9 @@
         </div>
     </div>
 
-    <!-- Hero Live Interactive GIS Radar Map Widget -->
+    <!-- Hero Live Interactive Satellite GIS Map Widget -->
     <div class="hero-viz-wrapper">
         <div id="heroMap"></div>
-        
-        <!-- Floating Live AI Insight Panel -->
-        <div class="floating-ai-insight">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="background: rgba(239, 68, 68, 0.15); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.1rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <div>
-                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Top Risk Insight</div>
-                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary);">{{ featured_project.project_name|default:"Navi Mumbai Airport" }}</div>
-                </div>
-            </div>
-            <div style="text-align: right;">
-                <span class="insight-pill">Risk: {{ featured_pred.delay_probability|default:"78.0" }}%</span>
-                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Compensation Pending</div>
-            </div>
-        </div>
     </div>
 </section>
 
@@ -765,7 +859,7 @@
         }
     });
 
-    // Initialize Dashboard Live India Hero Map with Pulsing Alert Markers
+    // Satellite Map System
     const heroMapElement = document.getElementById('heroMap');
     const indiaBounds = L.latLngBounds([[7.0, 67.5], [35.5, 96.5]]);
     
@@ -776,13 +870,13 @@
         maxZoom: 18
     });
 
-    const primaryTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        subdomains: ['a', 'b', 'c'],
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
+    // Pure Satellite Tile Layer
+    const satelliteTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 18,
+        attribution: '&copy; Esri World Imagery'
     }).addTo(map);
 
-    primaryTiles.on('tileerror', function(error, tile) {
+    satelliteTiles.on('tileerror', function(error, tile) {
         tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
     });
 
@@ -791,7 +885,6 @@
     const forceInvalidateMap = () => {
         if (map) {
             map.invalidateSize(true);
-            map.fitBounds(indiaBounds, { padding: [10, 10] });
         }
     };
 
@@ -806,7 +899,7 @@
         new ResizeObserver(() => forceInvalidateMap()).observe(heroMapElement);
     }
 
-    // Render Project Risk Markers with Animated Alert Pulse Signals
+    // Render Project Risk Markers with Animated Alert Pulse Signals & Interactive Popups
     const projectsData = {{ projects_map_json|safe }};
     
     projectsData.forEach(p => {
@@ -814,25 +907,36 @@
         
         const pulseIcon = L.divIcon({
             className: 'custom-pulse-marker',
-            html: `<div style="position: relative; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; cursor: pointer;">
-                     <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: ${color}; opacity: 0.45; animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);"></div>
-                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; border: 2px solid #ffffff; box-shadow: 0 0 10px ${color}; z-index: 2;"></div>
+            html: `<div style="position: relative; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; cursor: pointer;">
+                     <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: ${color}; opacity: 0.5; animation: pulse-ring 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1);"></div>
+                     <div style="width: 14px; height: 14px; border-radius: 50%; background: ${color}; border: 2.5px solid #ffffff; box-shadow: 0 0 14px ${color}; z-index: 2;"></div>
                    </div>`,
-            iconSize: [26, 26],
-            iconAnchor: [13, 13]
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
 
         const marker = L.marker([p.lat, p.lng], { icon: pulseIcon }).addTo(map);
 
-        marker.bindTooltip(`
-            <div style="padding: 4px 6px;">
-                <strong style="color: var(--brand-cyan);">${p.name}</strong><br>
-                <span style="font-size: 0.78rem; color: #cbd5e1;">${p.district}, ${p.state}</span><br>
-                <span style="font-weight: bold; color: ${color};">Risk: ${p.delay_prob}% (${p.risk_level})</span>
+        marker.bindPopup(`
+            <div style="padding: 6px 8px; font-family: sans-serif; color: #f8fafc; min-width: 190px;">
+                <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: #38bdf8; letter-spacing: 0.05em;">${p.type || 'Infrastructure Project'}</div>
+                <strong style="font-size: 0.95rem; display: block; margin: 3px 0 6px 0; color: #ffffff;">${p.name}</strong>
+                <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 8px;">
+                    <i class="fa-solid fa-location-dot" style="color: #ef4444;"></i> ${p.district}, ${p.state}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 6px; margin-bottom: 8px;">
+                    <span style="font-size: 0.75rem; color: #cbd5e1;">Delay Risk:</span>
+                    <span style="font-weight: 800; font-size: 0.88rem; color: ${color};">${p.delay_prob}% (${p.risk_level})</span>
+                </div>
+                <button onclick="openProjectModal('${p.id}')" style="width: 100%; background: linear-gradient(135deg, #2563eb, #06b6d4); border: none; color: white; padding: 7px 0; border-radius: 6px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    Inspect Analytics <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
-        `, { direction: 'top', offset: [0, -10] });
+        `, { className: 'custom-hero-leaflet-popup' });
 
-        marker.on('click', () => { openProjectModal(p.id); });
+        marker.on('click', () => {
+            map.panTo([p.lat, p.lng], { animate: true });
+        });
     });
 
     async function openProjectModal(projectId) {
