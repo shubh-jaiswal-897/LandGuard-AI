@@ -104,15 +104,126 @@ def calculate_analytical_risk(project):
     }
 
 
+def get_universal_gemini_model(api_key):
+    """
+    Universal Gemini Model Resolver that automatically discovers and selects
+    a working model for ANY provided Gemini API key (Free, Pro, Tiered, Legacy).
+    """
+    if not api_key:
+        return None, "LandGuard Empirical XAI"
+
+    try:
+        genai.configure(api_key=api_key)
+        candidates = [
+            'gemini-flash-latest',
+            'gemini-2.5-flash-lite',
+            'gemini-2.5-flash',
+            'gemini-1.5-flash',
+            'gemini-2.0-flash',
+            'gemini-3.8-flash',
+            'gemini-pro-latest',
+            'gemini-pro'
+        ]
+
+        try:
+            available = []
+            for m in genai.list_models():
+                if 'generateContent' in getattr(m, 'supported_generation_methods', []):
+                    model_clean = m.name.replace('models/', '')
+                    available.append(model_clean)
+
+            for cand in candidates:
+                if cand in available:
+                    return genai.GenerativeModel(cand), f"Gemini ({cand})"
+            if available:
+                return genai.GenerativeModel(available[0]), f"Gemini ({available[0]})"
+        except Exception:
+            pass
+
+        for cand in candidates:
+            try:
+                model = genai.GenerativeModel(cand)
+                return model, f"Gemini ({cand})"
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    return None, "LandGuard Empirical XAI"
+
+
 def generate_prediction_for_project(project):
     """
-    Generates a high-accuracy, 100% reliable domain-specific empirical XAI risk model prediction
-    based on LARR Act parameters, pending land footprint, compensation gaps, and litigation severity.
+    Generates a high-accuracy prediction for a project using any provided Gemini AI key,
+    or our high-precision domain-specific empirical XAI risk model as a 100% reliable fallback.
     """
-    # Always execute empirical domain analytics engine for fast, 100% reliable predictions
-    data = calculate_analytical_risk(project)
-    model_used = data.get('model_name', 'LandGuard Empirical XAI Engine')
-    version_used = data.get('model_version', '2.0 High Precision')
+    config = AIModelConfiguration.objects.filter(is_active=True, provider='GEMINI').first()
+    api_key = config.api_key if (config and config.api_key) else None
+
+    if not api_key:
+        gov_config = GovernmentAPIConfig.objects.filter(is_active=True, api_name='GEMINI').first()
+        if gov_config and gov_config.api_key:
+            api_key = gov_config.api_key
+        else:
+            api_key = os.environ.get("GEMINI_API_KEY")
+
+    data = None
+    model_used = 'LandGuard Empirical XAI'
+    version_used = '2.0 High Precision'
+
+    if api_key:
+        try:
+            model, model_name_found = get_universal_gemini_model(api_key)
+            if model:
+                total_land = float(project.total_land_area) if project.total_land_area else 0.0
+                acquired_land = float(project.acquired_land_area) if project.acquired_land_area else 0.0
+                pending_land = max(0.0, total_land - acquired_land)
+
+                prompt = f"""
+                You are an advanced AI Predictive Analytics Engine specializing in Indian Infrastructure & Land Acquisition (RFCTLARR Act 2013).
+                Analyze the following real-world infrastructure project and predict its land acquisition delay risk with high mathematical precision.
+
+                PROJECT DETAILS:
+                - Project Name: {project.project_name}
+                - Project Type: {project.project_type}
+                - Location: {project.district}, {project.state}
+                - Total Target Land: {total_land} hectares
+                - Acquired Land: {acquired_land} hectares
+                - Pending Land: {pending_land} hectares
+                - Current Project Status: {project.project_status}
+
+                Return ONLY valid JSON with this exact schema:
+                {{
+                    "delay_probability": <number 0-100>,
+                    "risk_level": "<LOW|MEDIUM|HIGH|CRITICAL>",
+                    "risk_factors": [
+                        {{
+                            "factor_name": "<risk factor name>",
+                            "impact_value": <number 0.0 to 1.0>,
+                            "explanation": "<explanation referencing metrics>"
+                        }}
+                    ]
+                }}
+                """
+
+                response = model.generate_content(prompt)
+                raw_text = response.text.strip()
+                if raw_text.startswith("```json"): raw_text = raw_text[7:]
+                elif raw_text.startswith("```"): raw_text = raw_text[3:]
+                if raw_text.endswith("```"): raw_text = raw_text[:-3]
+
+                parsed = json.loads(raw_text.strip())
+                if isinstance(parsed, dict) and 'delay_probability' in parsed and 'risk_level' in parsed:
+                    data = parsed
+                    model_used = model_name_found
+                    version_used = 'Universal Multi-Model'
+        except Exception:
+            data = None
+
+    if not data:
+        data = calculate_analytical_risk(project)
+        model_used = data.get('model_name', model_used)
+        version_used = data.get('model_version', version_used)
 
     # Save or update Prediction
     delay_prob = round(float(data.get('delay_probability', 50.0)), 2)

@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from dashboard.models import Project, LandAcquisition, GovernmentAPIConfig
 from alerts.models import Alert
 from prediction.models import Prediction, RiskFactor, AIModelConfiguration
+from prediction.utils import get_universal_gemini_model
 from recommendations.models import Recommendation
 from documents.models import Document
 
@@ -422,11 +423,23 @@ def settings_view(request):
     if request.method == 'POST':
         api_key = request.POST.get('gemini_api_key', '').strip()
         if api_key:
-            GovConfig, _ = GovernmentAPIConfig.objects.get_or_create(api_name='GEMINI')
-            GovConfig.api_key = api_key
-            GovConfig.is_active = True
-            GovConfig.save()
-            messages.success(request, "Gemini API Configuration updated successfully.")
+            # Update GovernmentAPIConfig
+            gov_config, _ = GovernmentAPIConfig.objects.get_or_create(api_name='GEMINI')
+            gov_config.api_key = api_key
+            gov_config.is_active = True
+            gov_config.save()
+
+            # Test & Auto-Discover supported model for this API key
+            model, model_display_name = get_universal_gemini_model(api_key)
+
+            # Update AIModelConfiguration
+            ai_config, _ = AIModelConfiguration.objects.get_or_create(provider='GEMINI')
+            ai_config.name = model_display_name
+            ai_config.api_key = api_key
+            ai_config.is_active = True
+            ai_config.save()
+
+            messages.success(request, f"Gemini API Configuration updated! Active Engine: {model_display_name}")
             return redirect('dashboard:settings')
 
     context = {
@@ -527,17 +540,9 @@ def ai_copilot_api(request):
 
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = None
-                for m_name in ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-flash']:
-                    try:
-                        model = genai.GenerativeModel(m_name)
-                        break
-                    except Exception:
-                        pass
-                if not model: model = genai.GenerativeModel('gemini-flash-latest')
-                context_lines = []
+                model, _ = get_universal_gemini_model(api_key)
+                if model:
+                    context_lines = []
                 for p in projects:
                     pred = getattr(p, 'prediction', None)
                     risk = pred.risk_level if pred else 'N/A'
@@ -628,17 +633,9 @@ def sync_live_data(request):
 
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = None
-                for m_name in ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-flash']:
-                    try:
-                        model = genai.GenerativeModel(m_name)
-                        break
-                    except Exception:
-                        pass
-                if not model: model = genai.GenerativeModel('gemini-flash-latest')
-                current_date = datetime.now().strftime("%Y-%m-%d")
+                model, _ = get_universal_gemini_model(api_key)
+                if model:
+                    current_date = datetime.now().strftime("%Y-%m-%d")
 
                 prompt = f"""
                 You are an advanced Open-Source Intelligence (OSINT) AI scanning news sources for Indian infrastructure land acquisition projects.
@@ -737,36 +734,27 @@ def get_ai_resolution(request, alert_id):
 
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = None
-                for m_name in ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-flash']:
-                    try:
-                        model = genai.GenerativeModel(m_name)
-                        break
-                    except Exception:
-                        pass
-                if not model: model = genai.GenerativeModel('gemini-flash-latest')
-                
-                prompt = f"""
-                You are an expert government infrastructure AI advisor.
-                Project Name: {alert.project.project_name}
-                Alert Type: {alert.alert_type}
-                Alert Message: {alert.message}
-                Severity: {alert.severity}
-                
-                Provide exactly 3 clear, concise, actionable steps for government officials to resolve this land acquisition issue.
-                Return ONLY a JSON array of 3 strings.
-                """
-                
-                response = model.generate_content(prompt)
-                raw_text = response.text.strip()
-                if raw_text.startswith("```json"): raw_text = raw_text[7:]
-                elif raw_text.startswith("```"): raw_text = raw_text[3:]
-                if raw_text.endswith("```"): raw_text = raw_text[:-3]
-                parsed = json.loads(raw_text.strip())
-                if isinstance(parsed, list) and len(parsed) >= 3:
-                    steps = parsed
+                model, _ = get_universal_gemini_model(api_key)
+                if model:
+                    prompt = f"""
+                    You are an expert government infrastructure AI advisor.
+                    Project Name: {alert.project.project_name}
+                    Alert Type: {alert.alert_type}
+                    Alert Message: {alert.message}
+                    Severity: {alert.severity}
+                    
+                    Provide exactly 3 clear, concise, actionable steps for government officials to resolve this land acquisition issue.
+                    Return ONLY a JSON array of 3 strings.
+                    """
+                    
+                    response = model.generate_content(prompt)
+                    raw_text = response.text.strip()
+                    if raw_text.startswith("```json"): raw_text = raw_text[7:]
+                    elif raw_text.startswith("```"): raw_text = raw_text[3:]
+                    if raw_text.endswith("```"): raw_text = raw_text[:-3]
+                    parsed = json.loads(raw_text.strip())
+                    if isinstance(parsed, list) and len(parsed) >= 3:
+                        steps = parsed
             except Exception:
                 steps = None
 
@@ -794,40 +782,31 @@ def generate_global_recommendations(request):
 
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                model = None
-                for m_name in ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-flash']:
-                    try:
-                        model = genai.GenerativeModel(m_name)
-                        break
-                    except Exception:
-                        pass
-                if not model: model = genai.GenerativeModel('gemini-flash-latest')
-                
-                projects = Project.objects.all()[:5]
-                context_str = "Recent Projects:\n"
-                for p in projects:
-                    context_str += f"- {p.project_name} (Land Acquired: {p.acquired_land_area}/{p.total_land_area} ha)\n"
+                model, _ = get_universal_gemini_model(api_key)
+                if model:
+                    projects = Project.objects.all()[:5]
+                    context_str = "Recent Projects:\n"
+                    for p in projects:
+                        context_str += f"- {p.project_name} (Land Acquired: {p.acquired_land_area}/{p.total_land_area} ha)\n"
+                        
+                    prompt = f"""
+                    You are an expert government infrastructure AI advisor.
+                    Based on system state:
+                    {context_str}
+                    Provide 3 strategic recommendations. Return ONLY valid JSON list of objects:
+                    [
+                        {{"title": "Title", "description": "2-sentence plan", "icon": "fa-gavel", "color_theme": "blue"}}
+                    ]
+                    """
                     
-                prompt = f"""
-                You are an expert government infrastructure AI advisor.
-                Based on system state:
-                {context_str}
-                Provide 3 strategic recommendations. Return ONLY valid JSON list of objects:
-                [
-                    {{"title": "Title", "description": "2-sentence plan", "icon": "fa-gavel", "color_theme": "blue"}}
-                ]
-                """
-                
-                response = model.generate_content(prompt)
-                raw_text = response.text.strip()
-                if raw_text.startswith("```json"): raw_text = raw_text[7:]
-                elif raw_text.startswith("```"): raw_text = raw_text[3:]
-                if raw_text.endswith("```"): raw_text = raw_text[:-3]
-                parsed = json.loads(raw_text.strip())
-                if isinstance(parsed, list):
-                    recommendations = parsed
+                    response = model.generate_content(prompt)
+                    raw_text = response.text.strip()
+                    if raw_text.startswith("```json"): raw_text = raw_text[7:]
+                    elif raw_text.startswith("```"): raw_text = raw_text[3:]
+                    if raw_text.endswith("```"): raw_text = raw_text[:-3]
+                    parsed = json.loads(raw_text.strip())
+                    if isinstance(parsed, list):
+                        recommendations = parsed
             except Exception:
                 recommendations = None
 
