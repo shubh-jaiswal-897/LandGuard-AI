@@ -106,7 +106,7 @@
     /* Hero Map Widget & Floating AI Insight Card */
     .hero-viz-wrapper {
         position: relative;
-        height: 440px;
+        height: 480px;
         width: 100%;
         border-radius: var(--radius-lg);
         overflow: hidden;
@@ -760,40 +760,42 @@
         }
     });
 
-    // Initialize Mini Hero Map - Full India View (Auto-fit Bounds, Zero Missing Tiles, No API Key)
+    // Initialize Mini Hero Map - Full India Centered View (Zero Cut off)
     const heroMapElement = document.getElementById('heroMap');
-    const indiaBounds = L.latLngBounds([[7.0, 67.5], [35.5, 96.5]]);
+    const indiaBounds = L.latLngBounds([[6.5, 68.0], [35.5, 97.0]]);
     
-    const map = L.map('heroMap', { zoomControl: false, attributionControl: false });
+    const map = L.map('heroMap', { 
+        zoomControl: false, 
+        attributionControl: false,
+        minZoom: 3,
+        maxZoom: 18
+    }).setView([21.5, 80.0], 4);
     
     const primaryTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors, Tiles style by HOT France'
+        noWrap: true,
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     primaryTiles.on('tileerror', function(error, tile) {
         tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
     });
 
-    // Fit exact bounds of India
-    map.fitBounds(indiaBounds, { padding: [5, 5] });
-
-    const invalidateHeroMap = () => {
+    const fitIndiaInView = () => {
         if (map) { 
             map.invalidateSize(true);
-            map.fitBounds(indiaBounds, { padding: [5, 5] });
+            map.fitBounds(indiaBounds, { padding: [10, 10], maxZoom: 4.8 });
         }
     };
 
-    window.addEventListener('load', invalidateHeroMap);
-    window.addEventListener('resize', invalidateHeroMap);
-    setTimeout(invalidateHeroMap, 100);
-    setTimeout(invalidateHeroMap, 300);
-    setTimeout(invalidateHeroMap, 800);
+    window.addEventListener('load', fitIndiaInView);
+    window.addEventListener('resize', fitIndiaInView);
+    setTimeout(fitIndiaInView, 150);
+    setTimeout(fitIndiaInView, 500);
 
     if (window.ResizeObserver && heroMapElement) {
-        new ResizeObserver(() => invalidateHeroMap()).observe(heroMapElement);
+        new ResizeObserver(() => fitIndiaInView()).observe(heroMapElement);
     }
 
     const projectsData = {{ projects_map_json|safe }};
