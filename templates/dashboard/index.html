@@ -760,28 +760,37 @@
         }
     });
 
-    // Initialize Mini Hero Map - Full India Street & Geographic View (No API Key, No 403 Error)
+    // Initialize Mini Hero Map - Full India View (Auto-fit Bounds, Zero Missing Tiles, No API Key)
     const heroMapElement = document.getElementById('heroMap');
-    const map = L.map('heroMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4.2);
+    const indiaBounds = L.latLngBounds([[7.0, 67.5], [35.5, 96.5]]);
     
-    const primaryTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    const map = L.map('heroMap', { zoomControl: false, attributionControl: false });
+    
+    const primaryTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-        attribution: 'Esri World Street Map'
+        attribution: '&copy; OpenStreetMap contributors, Tiles style by HOT France'
     }).addTo(map);
 
     primaryTiles.on('tileerror', function(error, tile) {
-        tile.src = 'https://tile.openstreetmap.de/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
+        tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
     });
 
+    // Fit exact bounds of India
+    map.fitBounds(indiaBounds, { padding: [5, 5] });
+
     const invalidateHeroMap = () => {
-        if (map) { map.invalidateSize(true); }
+        if (map) { 
+            map.invalidateSize(true);
+            map.fitBounds(indiaBounds, { padding: [5, 5] });
+        }
     };
 
     window.addEventListener('load', invalidateHeroMap);
     window.addEventListener('resize', invalidateHeroMap);
     setTimeout(invalidateHeroMap, 100);
-    setTimeout(invalidateHeroMap, 400);
-    setTimeout(invalidateHeroMap, 1000);
+    setTimeout(invalidateHeroMap, 300);
+    setTimeout(invalidateHeroMap, 800);
 
     if (window.ResizeObserver && heroMapElement) {
         new ResizeObserver(() => invalidateHeroMap()).observe(heroMapElement);

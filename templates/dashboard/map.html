@@ -179,26 +179,33 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const gisMapElement = document.getElementById('gisMap');
-    const map = L.map('gisMap', { zoomControl: false, attributionControl: false }).setView([22.5937, 78.9629], 4.5);
+    const indiaBounds = L.latLngBounds([[7.0, 67.5], [35.5, 96.5]]);
+    const map = L.map('gisMap', { zoomControl: false, attributionControl: false });
     
-    const primaryGisTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    const primaryGisTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-        attribution: 'Esri World Street Map'
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     primaryGisTiles.on('tileerror', function(error, tile) {
-        tile.src = 'https://tile.openstreetmap.de/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
+        tile.src = 'https://tile.openstreetmap.org/' + error.coords.z + '/' + error.coords.x + '/' + error.coords.y + '.png';
     });
 
+    map.fitBounds(indiaBounds, { padding: [10, 10] });
+
     const invalidateGisMap = () => {
-        if (map) { map.invalidateSize(true); }
+        if (map) { 
+            map.invalidateSize(true);
+            map.fitBounds(indiaBounds, { padding: [10, 10] });
+        }
     };
 
     window.addEventListener('load', invalidateGisMap);
     window.addEventListener('resize', invalidateGisMap);
     setTimeout(invalidateGisMap, 100);
-    setTimeout(invalidateGisMap, 400);
-    setTimeout(invalidateGisMap, 1000);
+    setTimeout(invalidateGisMap, 300);
+    setTimeout(invalidateGisMap, 800);
 
     if (window.ResizeObserver && gisMapElement) {
         new ResizeObserver(() => invalidateGisMap()).observe(gisMapElement);
